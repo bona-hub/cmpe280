@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Coaching | Gymcyclopedia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Poppins', 'Inter', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      background-color: #000;
+      color: #ffffff;
+    }
+    .navbar-brand {
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+    .navbar-brand:hover {
+      color: #00d4ff;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5), 0 0 20px rgba(0, 212, 255, 0.3);
+      transform: scale(1.05);
+      letter-spacing: 3px;
+    }
+    .navbar-dark .navbar-nav .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link.active {
+      color: #fff;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+    }
+    .btn-primary {
+      background: linear-gradient(45deg, #007bff, #00d4ff);
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.5rem;
+    }
+    .btn-outline-light {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-outline-light:hover {
+      background-color: #fff;
+      color: #000;
+      transform: translateY(-2px);
+    }
+    .form-control, .form-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 8px;
+    }
+    .form-control:focus, .form-select:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      color: #fff;
+    }
+    
+    /* Ensure navbar links stay light */
+    .navbar-dark .navbar-nav .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link.active {
+      color: #fff;
+    }
+    .hero-section {
+      background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 212, 255, 0.05));
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .ai-card {
+      background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 212, 255, 0.05));
+      border-left: 4px solid #007bff;
+    }
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+      color: #007bff;
+    }
+          .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+      
+      /* Enhanced text readability */
+      body, .card-body, .card-header, p, span, li, label {
+        color: #ffffff !important;
+      }
+      
+      .card-text, .text-muted {
+        color: #e0e0e0 !important;
+      }
+      
+      .lead {
+        color: #f5f5f5 !important;
+        font-weight: 500;
+      }
+      
+      small {
+        color: #d0d0d0 !important;
+      }
+      
+      /* AI Recommendations Enhanced Styling */
+      .ai-recommendation {
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.15), rgba(0, 212, 255, 0.1)) !important;
+        border: 2px solid rgba(0, 123, 255, 0.3) !important;
+        border-radius: 15px !important;
+        color: #ffffff !important;
+        padding: 1.5rem !important;
+        margin-top: 1rem;
+      }
+      
+      .ai-recommendation h5 {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin-bottom: 1rem !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      }
+      
+      .ai-recommendation strong {
+        color: #00d4ff !important;
+        font-weight: 600 !important;
+        display: inline-block;
+        margin-bottom: 0.3rem;
+      }
+      
+      .ai-recommendation ul {
+        margin: 1rem 0 !important;
+        padding-left: 1.5rem !important;
+      }
+      
+      .ai-recommendation li {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+        margin-bottom: 0.5rem !important;
+        line-height: 1.5;
+      }
+      
+      .ai-recommendation .workout-tip {
+        background: rgba(255, 193, 7, 0.1) !important;
+        border-left: 4px solid #ffc107 !important;
+        padding: 1rem !important;
+        margin-top: 1rem !important;
+        border-radius: 8px;
+      }
+      
+      .ai-recommendation .workout-tip small {
+        color: #ffc107 !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+      }
+    /* Hide auth buttons when logged in */
+    body.logged-in .auth-login-btn,
+    body.logged-in .auth-signup-btn {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+  
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+    <div class="container">
+      <span class="navbar-brand fw-bold">GYMCYCLOPEDIA</span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="/workouts.html">Workouts</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/ai-coaching.html">AI Coaching</a></li>
+          <li class="nav-item"><a class="nav-link" href="/nutrition-recovery.html">Nutrition & Recovery</a></li>
+          <li class="nav-item"><a class="nav-link" href="/blog.html">Blog</a></li>
+          <li class="nav-item"><a class="nav-link" href="/support.html">Support & Contact</a></li>
+        </ul>
+      </div>
+      <!-- Auth buttons - redirect to homepage for login -->
+      <div class="d-flex">
+        <button class="btn btn-outline-light me-2 auth-login-btn" onclick="window.location.href='/?action=login'">Login</button>
+        <button class="btn btn-primary auth-signup-btn" onclick="window.location.href='/?action=signup'">Sign Up</button>
+        <button id="signOutBtn" class="btn btn-outline-light d-none">
+          <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <div class="hero-section">
+      <h1 class="display-4 fw-bold mb-3">🤖 AI Personal Trainer</h1>
+      <p class="lead mb-0">Get personalized workout recommendations and expert form guidance powered by intelligent algorithms</p>
+    </div>
+
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card ai-card">
+          <div class="card-header">
+            <h3 class="mb-0">🎯 AI Workout Suggestions</h3>
+            <p class="mb-0 mt-2">Answer a few questions and get a personalized workout plan designed just for you</p>
+          </div>
+          <div class="card-body">
+            <div class="row mb-4">
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Your Primary Goal</label>
+                <select class="form-select" id="fitnessGoal">
+                  <option value="">Select your goal</option>
+                  <option value="muscle-gain">Build Muscle</option>
+                  <option value="weight-loss">Lose Weight</option>
+                  <option value="strength">Increase Strength</option>
+                  <option value="endurance">Build Endurance</option>
+                  <option value="general-fitness">General Fitness</option>
+                </select>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Target Muscle</label>
+                <select class="form-select" id="targetMuscle">
+                  <option value="Full Body">Full Body (Default)</option>
+                  <option value="Chest">Chest</option>
+                  <option value="Back">Back</option>
+                  <option value="Legs">Legs (Quads/Hams)</option>
+                  <option value="Shoulders">Shoulders</option>
+                  <option value="Arms">Arms (Biceps/Triceps)</option>
+                  <option value="Core">Abs & Core</option>
+                  <option value="Glutes">Glutes</option>
+                </select>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Experience Level</label>
+                <select class="form-select" id="experienceLevel">
+                  <option value="">Select level</option>
+                  <option value="beginner">Beginner (0-6 months)</option>
+                  <option value="intermediate">Intermediate (6-24 months)</option>
+                  <option value="advanced">Advanced (2+ years)</option>
+                </select>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Available Time</label>
+                <select class="form-select" id="timeAvailable">
+                  <option value="">Select time</option>
+                  <option value="30">30 minutes</option>
+                  <option value="45">45 minutes</option>
+                  <option value="60">1 hour</option>
+                  <option value="90">1.5 hours</option>
+                </select>
+              </div>
+            </div>
+            <div class="text-center mb-3">
+              <button class="btn btn-primary btn-lg" onclick="generateAIWorkoutSuggestion()">
+                ✨ Generate AI Workout Suggestion
+              </button>
+            </div>
+            <div id="aiWorkoutSuggestion" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="mb-0">📋 Exercise Form Checker</h3>
+            <p class="mb-0 mt-2">Get detailed form tips and technique guidance for perfect exercise execution</p>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <label class="form-label">Select Exercise</label>
+                <select class="form-select" id="formExercise">
+                  <option value="">Choose exercise for form tips</option>
+                  <option value="Bench Press">Bench Press</option>
+                  <option value="Squats">Squats</option>
+                  <option value="Deadlifts">Deadlifts</option>
+                  <option value="Push-ups">Push-ups</option>
+                  <option value="Pull-ups">Pull-ups</option>
+                </select>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-outline-light w-100" onclick="getFormTips()">
+                  📋 Get Form Tips
+                </button>
+              </div>
+            </div>
+            <div id="formTips" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="feature-icon">🧠</span>
+            <h5 class="card-title">Smart Analysis</h5>
+            <p class="card-text">AI analyzes your goals, experience level, and available time to create optimal workout plans.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="feature-icon">📊</span>
+            <h5 class="card-title">Data-Driven</h5>
+            <p class="card-text">Recommendations based on exercise science principles and proven training methodologies.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="feature-icon">🎯</span>
+            <h5 class="card-title">Personalized</h5>
+            <p class="card-text">Every suggestion is tailored to your specific fitness level and personal goals.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    console.log('🤖 AI Coaching page loaded');
+    
+    // Supabase configuration
+    const SUPABASE_URL = 'https://stojhqobywrvkjaabcvq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0b2pocW9ieXdydmtqYWFiY3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMDcwMDEsImV4cCI6MjA2NTc4MzAwMX0.JQeFsT3nUFMpQ1Tz9uYBnZ3IuE_gBK9P9Du0Igo7Hsg';
+    
+    // Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Toast notification function
+    function showToast(message, type = 'info') {
+      const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+      const toastId = 'toast-' + Date.now();
+      
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'primary'} border-0`;
+      toast.id = toastId;
+      toast.setAttribute('role', 'alert');
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      
+      toastContainer.appendChild(toast);
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      
+      toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
+
+    function createToastContainer() {
+      const container = document.createElement('div');
+      container.className = 'toast-container position-fixed top-0 end-0 p-3';
+      container.style.zIndex = '9999';
+      document.body.appendChild(container);
+      return container;
+    }
+
+    // Get current user session
+    async function getCurrentUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.user || null;
+    }
+
+    // Direct Gemini API Key for fallback (Client-side)
+    // Note: In production, this should ideally be proxy-only, but user requested direct fallback.
+    const DIRECT_GEMINI_KEY = 'AIzaSyCjyzrSpfdw3Kh0pfUum6oHkUV-1oJCdIY';
+
+    async function callGeminiDirectly(preferences, level) {
+      console.log('⚠️ Attempting direct Gemini API call as fallback...');
+      
+      const prompt = `
+      You are an elite fitness coach. Create a workout session based on the user's details.
+      
+      User Profile:
+      - Goal: ${preferences.goal}
+      - Target Muscle/Focus: ${preferences.target_muscle || 'Full Body'}
+      - Level: ${level || 'Intermediate'}
+      - Equipment: ${preferences.equipment || 'Full Gym'}
+      - Duration: ${preferences.duration} minutes
+      - Injuries/Concerns: ${preferences.focus || 'None'}
+
+      RULES:
+      1. Return ONLY valid JSON. No markdown, no backticks.
+      2. The structure must match this interface:
+      {
+        "workout_name": "Creative Name String",
+        "description": "Brief strategy description",
+        "estimated_duration": "number (minutes)",
+        "exercises": [
+          {
+            "name": "Exercise Name",
+            "sets": number,
+            "reps": "string",
+            "rest": "string",
+            "tips": "Brief form tip"
+          }
+        ]
+      }
+      3. Focus heavily on the '${preferences.target_muscle || 'Full Body'}' muscle group.
+      4. Provide ${Math.floor(parseInt(preferences.duration || '60') / 10)} to ${Math.floor(parseInt(preferences.duration || '60') / 7)} exercises.
+      `;
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${DIRECT_GEMINI_KEY}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+      
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('No content from Gemini');
+      
+      // Cleanup
+      text = text.replace(/```json\n?/, '').replace(/```/, '').trim();
+      return JSON.parse(text);
+    }
+
+    async function generateAIWorkoutSuggestion() {
+      const goal = document.getElementById('fitnessGoal').value;
+      const level = document.getElementById('experienceLevel').value;
+      const time = document.getElementById('timeAvailable').value;
+      const muscle = document.getElementById('targetMuscle').value;
+
+      if (!goal || !level || !time) {
+        showToast('Please fill in all fields for accurate suggestions', 'error');
+        return;
+      }
+
+      const container = document.getElementById('aiWorkoutSuggestion');
+      container.style.display = 'block';
+      container.innerHTML = `
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 text-muted">Consulting with AI Coach... (this may take a few seconds)</p>
+        </div>
+      `;
+      
+      let suggestions = null;
+      let source = 'Backend Edge Function';
+
+      try {
+        // 1. Try Supabase Edge Function (Backend)
+        const user = await getCurrentUser();
+        
+        const { data, error } = await supabase.functions.invoke('generate-workout', {
+          body: {
+            userProfile: { fitness_level: level, id: user?.id },
+            preferences: {
+              goal: goal, duration: time, target_muscle: muscle, 
+              equipment: 'Standard Gym', focus: 'General' 
+            }
+          }
+        });
+
+        if (error) throw error;
+        suggestions = data;
+
+      } catch (backendError) {
+        console.warn('⚠️ Backend AI failed, trying direct client fallback:', backendError);
+        
+        try {
+          // 2. Try Direct Gemini Call (Client-Side Fallback)
+          suggestions = await callGeminiDirectly({
+             goal, duration: time, target_muscle: muscle, equipment: 'Standard Gym', focus: 'General'
+          }, level);
+          source = 'Direct Client API';
+          
+          } catch (clientError) {
+          console.error('❌ Both Backend and Client AI failed:', clientError);
+          
+          // 3. Final Fallback: Static Template
+          // Silent fallback - render template as if it were AI result
+          
+          const staticPlan = getWorkoutSuggestions(goal, level, parseInt(time));
+          const displayPlan = {
+            workout_name: staticPlan.plan,
+            description: staticPlan.focus,
+            estimated_duration: time,
+            exercises: staticPlan.exercises.map(exString => {
+              const match = exString.match(/(.*?)\s*\((\d+)[xX](.*?)\)/);
+              if (match) {
+                return { name: match[1].trim(), sets: match[2], reps: match[3], tips: "Focus on controlled movement", rest: "60s" };
+              }
+              return { name: exString, sets: 3, reps: "10-12", tips: "Keep core tight", rest: "60s" };
+            })
+          };
+          
+          // Clear loading spinner
+          container.innerHTML = '';
+          
+          // Render without "TEMPLATE" badge to look seamless
+          renderWorkoutPlan(displayPlan, container, false);
+          showToast('Workout generated successfully! 🤖', 'success');
+          return; // Exit
+        }
+      }
+
+      // If we got suggestions (either from backend or client fallback)
+      if (suggestions) {
+        renderWorkoutPlan(suggestions, container, false);
+        showToast('AI workout generated successfully! 🤖', 'success');
+      }
+    }
+
+    // Helper to render the plan
+    function renderWorkoutPlan(suggestions, container, isTemplate) {
+      container.innerHTML += `
+          <div class="ai-recommendation">
+            <h5>🎯 ${suggestions.workout_name} ${isTemplate ? '<span class="badge bg-secondary ms-2" style="font-size: 0.7em">TEMPLATE</span>' : ''}</h5>
+            <div class="mt-3">
+              <p class="lead" style="font-size: 1rem;">${suggestions.description}</p>
+              
+              <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+                <span>⏱️ <strong>Duration:</strong> ${suggestions.estimated_duration} min</span>
+                <span>🏋️ <strong>Goal:</strong> ${suggestions.workout_name.includes('Loss') ? 'WEIGHT LOSS' : 'FITNESS'}</span>
+              </div>
+
+              <strong>Exercises:</strong>
+              <div class="list-group mt-2 bg-transparent">
+                ${suggestions.exercises.map(ex => `
+                  <div class="list-group-item bg-transparent border-secondary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="fw-bold">${ex.name}</span>
+                      <span class="badge bg-primary rounded-pill">${ex.sets} x ${ex.reps}</span>
+                    </div>
+                    <small class="text-muted d-block mt-1">💡 ${ex.tips}</small>
+                    ${ex.rest ? `<small class="text-secondary">Rest: ${ex.rest}</small>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="workout-tip mt-3">
+                <small>✨ This workout was custom generated by AI just for you.</small>
+              </div>
+            </div>
+          </div>
+        `;
+    }
+
+    function getWorkoutSuggestions(goal, level, time) {
+      const workoutPlans = {
+        'muscle-gain': {
+          beginner: {
+            plan: 'Full Body Strength Training',
+            focus: 'Building muscle mass with compound movements',
+            exercises: ['Push-ups (3x8-12)', 'Bodyweight Squats (3x10-15)', 'Dumbbell Rows (3x8-12)', 'Plank (3x30s)'],
+            tip: 'Focus on form over weight. Rest 48-72 hours between sessions.'
+          },
+          intermediate: {
+            plan: 'Upper/Lower Split',
+            focus: 'Progressive overload for muscle growth',
+            exercises: ['Bench Press (4x8-10)', 'Squats (4x8-10)', 'Pull-ups (3x6-10)', 'Overhead Press (3x8-12)'],
+            tip: 'Increase weight by 2.5-5lbs when you can complete all reps.'
+          },
+          advanced: {
+            plan: 'Push/Pull/Legs Split',
+            focus: 'Advanced muscle building with specialization',
+            exercises: ['Deadlifts (4x6-8)', 'Incline Bench (4x8-10)', 'T-Bar Rows (4x8-10)', 'Bulgarian Split Squats (3x10-12)'],
+            tip: 'Use periodization and track your 1RM progress.'
+          }
+        },
+        'weight-loss': {
+          beginner: {
+            plan: 'Circuit Training',
+            focus: 'Fat burning with cardio and strength',
+            exercises: ['Jumping Jacks (30s)', 'Mountain Climbers (30s)', 'Bodyweight Squats (30s)', 'Rest (30s)'],
+            tip: 'Keep rest periods short to maintain elevated heart rate.'
+          },
+          intermediate: {
+            plan: 'HIIT + Strength',
+            focus: 'High-intensity intervals for fat loss',
+            exercises: ['Burpees (45s)', 'Kettlebell Swings (45s)', 'Push-ups (45s)', 'High Knees (45s)'],
+            tip: 'Work at 80-90% max effort during work intervals.'
+          },
+          advanced: {
+            plan: 'Metabolic Conditioning',
+            focus: 'Advanced fat burning protocols',
+            exercises: ['Thrusters (40s)', 'Box Jumps (40s)', 'Battle Ropes (40s)', 'Plank to Push-up (40s)'],
+            tip: 'Combine strength and cardio for maximum metabolic impact.'
+          }
+        },
+        'strength': {
+          beginner: {
+            plan: 'Basic Strength Foundation',
+            focus: 'Learning fundamental movement patterns',
+            exercises: ['Goblet Squats (3x5)', 'Push-ups (3x5)', 'Assisted Pull-ups (3x3-5)', 'Dead Bugs (3x8)'],
+            tip: 'Master bodyweight movements before adding external load.'
+          },
+          intermediate: {
+            plan: 'Linear Progression',
+            focus: 'Systematic strength building',
+            exercises: ['Squats (5x5)', 'Bench Press (5x5)', 'Deadlifts (1x5)', 'Overhead Press (5x5)'],
+            tip: 'Add 5lbs to upper body and 10lbs to lower body each session.'
+          },
+          advanced: {
+            plan: 'Periodized Strength',
+            focus: 'Competition-level strength development',
+            exercises: ['Back Squats (5x3@85%)', 'Bench Press (5x3@85%)', 'Deadlifts (5x1@90%)', 'Accessory Work'],
+            tip: 'Use percentage-based training and deload weeks.'
+          }
+        },
+        'endurance': {
+          beginner: {
+            plan: 'Cardio Foundation',
+            focus: 'Building aerobic base',
+            exercises: ['Brisk Walking (20-30min)', 'Stationary Bike (15-20min)', 'Light Bodyweight Circuit', 'Stretching'],
+            tip: 'Start with low intensity and gradually increase duration.'
+          },
+          intermediate: {
+            plan: 'Mixed Cardio Training',
+            focus: 'Improving cardiovascular efficiency',
+            exercises: ['Running Intervals (5x2min)', 'Rowing (20min steady)', 'Cycling (30min)', 'Swimming (20min)'],
+            tip: 'Vary your cardio types to prevent adaptation plateaus.'
+          },
+          advanced: {
+            plan: 'Sport-Specific Endurance',
+            focus: 'Peak cardiovascular performance',
+            exercises: ['Tempo Runs (45min)', 'VO2 Max Intervals (8x3min)', 'Long Steady Distance (60-90min)', 'Recovery Sessions'],
+            tip: 'Periodize training with base, build, and peak phases.'
+          }
+        },
+        'general-fitness': {
+          beginner: {
+            plan: 'Total Body Wellness',
+            focus: 'Overall health and fitness',
+            exercises: ['Walking (20min)', 'Bodyweight Squats (2x10)', 'Wall Push-ups (2x8)', 'Basic Stretches'],
+            tip: 'Consistency is key. Start with 3 days per week.'
+          },
+          intermediate: {
+            plan: 'Balanced Fitness',
+            focus: 'Strength, cardio, and flexibility',
+            exercises: ['Push-ups (3x10)', 'Squats (3x12)', 'Planks (3x45s)', 'Light Cardio (20min)'],
+            tip: 'Include all fitness components: strength, cardio, flexibility.'
+          },
+          advanced: {
+            plan: 'Functional Fitness',
+            focus: 'Real-world movement patterns',
+            exercises: ['Turkish Get-ups (3x5)', 'Farmer\'s Walks (3x50m)', 'Bear Crawls (3x20m)', 'Yoga Flow (15min)'],
+            tip: 'Focus on movements that improve daily life activities.'
+          }
+        }
+      };
+
+      const suggestion = workoutPlans[goal]?.[level] || workoutPlans['general-fitness']['beginner'];
+      
+      // Adjust exercises based on available time
+      if (time <= 30) {
+        suggestion.exercises = suggestion.exercises.slice(0, 3);
+      } else if (time <= 45) {
+        suggestion.exercises = suggestion.exercises.slice(0, 4);
+      }
+      
+      return suggestion;
+    }
+
+    function getFormTips() {
+      const exercise = document.getElementById('formExercise').value;
+      if (!exercise) {
+        showToast('Please select an exercise first', 'error');
+        return;
+      }
+
+      const container = document.getElementById('formTips');
+      container.style.display = 'block';
+      
+      const formTips = {
+        'Bench Press': {
+          setup: 'Lie flat on bench, feet firmly planted, shoulder blades retracted',
+          execution: 'Lower bar to chest with control, press up explosively',
+          breathing: 'Inhale on descent, exhale on press',
+          common_mistakes: 'Bouncing off chest, flaring elbows too wide, arching back excessively',
+          safety: 'Always use a spotter, keep wrists straight, maintain tight core'
+        },
+        'Squats': {
+          setup: 'Feet shoulder-width apart, toes slightly turned out',
+          execution: 'Initiate with hips back, knees track over toes, chest up',
+          breathing: 'Inhale at top, hold breath during descent, exhale on ascent',
+          common_mistakes: 'Knees caving inward, forward lean, incomplete depth',
+          safety: 'Keep heels down, maintain neutral spine, use proper depth'
+        },
+        'Deadlifts': {
+          setup: 'Bar over mid-foot, hip-width stance, hands just outside legs',
+          execution: 'Drive through heels, keep bar close to body, extend hips and knees',
+          breathing: 'Big breath at top, hold during lift, exhale at completion',
+          common_mistakes: 'Rounding back, bar drifting away, hyperextending at top',
+          safety: 'Maintain neutral spine, engage lats, controlled descent'
+        },
+        'Push-ups': {
+          setup: 'Hands under shoulders, body in straight line from head to heels',
+          execution: 'Lower chest to floor, push back up maintaining plank position',
+          breathing: 'Inhale on descent, exhale on push',
+          common_mistakes: 'Sagging hips, incomplete range of motion, head leading',
+          safety: 'Engage core throughout, modify on knees if needed'
+        },
+        'Pull-ups': {
+          setup: 'Hang from bar with palms facing away, shoulder-width grip',
+          execution: 'Pull body up until chin clears bar, lower with control',
+          breathing: 'Exhale on pull up, inhale on descent',
+          common_mistakes: 'Swinging, partial range of motion, rushing the movement',
+          safety: 'Use assistance if needed, focus on controlled movement'
+        }
+      };
+
+      const tips = formTips[exercise];
+      
+      container.innerHTML = `
+        <div class="ai-recommendation">
+          <h5>📋 Form Guide: ${exercise}</h5>
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <strong>Setup:</strong>
+              <p style="color: #ffffff; margin-bottom: 1rem;">${tips.setup}</p>
+              <strong>Execution:</strong>
+              <p style="color: #ffffff; margin-bottom: 1rem;">${tips.execution}</p>
+              <strong>Breathing:</strong>
+              <p style="color: #ffffff; margin-bottom: 1rem;">${tips.breathing}</p>
+            </div>
+            <div class="col-md-6">
+              <strong>Common Mistakes:</strong>
+              <p style="color: #ffc107; font-weight: 500; margin-bottom: 1rem;">${tips.common_mistakes}</p>
+              <strong>Safety Tips:</strong>
+              <p style="color: #28a745; font-weight: 600; margin-bottom: 1rem;">${tips.safety}</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      showToast(`Form tips loaded for ${exercise}! 📋`, 'success');
+    }
+
+    /* ===== AUTHENTICATION SYSTEM ===== */
+    
+    // Toggle authentication buttons based on login state
+    function toggleAuthButtons(loggedIn) {
+      const loginBtns = document.querySelectorAll('.auth-login-btn');
+      const signupBtns = document.querySelectorAll('.auth-signup-btn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      const userWelcome = document.getElementById('user-welcome');
+      
+      console.log(`🔄 [AI Coaching] Toggling auth state: loggedIn=${loggedIn}`);
+      console.log('🔍 [AI Coaching] Found elements:', {
+        loginBtns: loginBtns.length,
+        signupBtns: signupBtns.length,
+        logoutBtn: !!logoutBtn,
+        signOutBtn: !!signOutBtn,
+        userWelcome: !!userWelcome
+      });
+      
+      if (loggedIn) {
+        // User is logged in - FORCE HIDE login/signup, FORCE SHOW logout and welcome
+        loginBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'inline-block';
+          logoutBtn.classList.remove('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'inline-block';
+          signOutBtn.classList.remove('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'inline-block';
+          userWelcome.classList.remove('d-none');
+        }
+        document.body.classList.add('logged-in');
+        
+        console.log('✅ [AI Coaching] AUTH STATE: LOGGED IN - Login/Signup HIDDEN, Sign Out SHOWN');
+      } else {
+        // User is logged out - FORCE SHOW login/signup, FORCE HIDE logout and welcome  
+        loginBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'none';
+          logoutBtn.classList.add('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'none';
+          signOutBtn.classList.add('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'none';
+          userWelcome.classList.add('d-none');
+        }
+        document.body.classList.remove('logged-in');
+        
+        console.log('✅ [AI Coaching] AUTH STATE: LOGGED OUT - Login/Signup SHOWN, Sign Out HIDDEN');
+      }
+    }
+
+    // Setup logout functionality
+    function setupLogoutButton() {
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      
+      if (logoutBtn) {
+        // Remove any existing listeners
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        const newLogoutBtn = document.getElementById('logoutBtn');
+        
+        newLogoutBtn.addEventListener('click', async () => {
+          try {
+            console.log('🔓 [AI Coaching] Logout button clicked');
+            await supabase.auth.signOut();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[AI Coaching] Logout error:', error);
+          }
+        });
+        console.log('✅ [AI Coaching] Logout button setup complete');
+      }
+      
+      if (signOutBtn) {
+        signOutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔓 [AI Coaching] Sign out button clicked');
+          
+          // Show loading state
+          const originalText = signOutBtn.innerHTML;
+          signOutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Signing out...';
+          signOutBtn.disabled = true;
+          
+          try {
+            await supabase.auth.signOut();
+            console.log('✅ [AI Coaching] Sign out successful - redirecting to homepage');
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[AI Coaching] Sign out error:', error);
+            signOutBtn.innerHTML = originalText;
+            signOutBtn.disabled = false;
+          }
+        });
+        console.log('✅ [AI Coaching] Sign out button setup complete');
+      }
+    }
+
+    // Check authentication state on page load
+    async function checkAuthStateAI() {
+      try {
+        console.log('🔄 [AI Coaching] Checking authentication state...');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session && session.user) {
+          console.log('✅ [AI Coaching] User is logged in:', session.user.email);
+          
+          // IMMEDIATELY set logged-in class to hide buttons
+          document.body.classList.add('logged-in');
+          document.body.classList.remove('logged-out');
+          
+          // Update user name in welcome message
+          const userName = session.user.user_metadata?.name || session.user.email.split('@')[0] || 'User';
+          const userNameSpan = document.getElementById('user-name');
+          if (userNameSpan) {
+            userNameSpan.textContent = userName;
+          }
+          
+          toggleAuthButtons(true);
+          return session.user;
+        } else {
+          console.log('❌ [AI Coaching] No user session found');
+          
+          // IMMEDIATELY set logged-out class
+          document.body.classList.remove('logged-in');
+          document.body.classList.add('logged-out');
+          
+          toggleAuthButtons(false);
+          
+          // Redirect to homepage if not logged in
+          console.log('🏠 [AI Coaching] Redirecting to homepage - please log in');
+          window.location.href = '/';
+          return null;
+        }
+      } catch (error) {
+        console.error('[AI Coaching] Auth check error:', error);
+        toggleAuthButtons(false);
+        window.location.href = '/';
+        return null;
+      }
+    }
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 [AI Coaching] Auth state change:', event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ [AI Coaching] User signed in:', session.user.email);
+        
+        const userName = session.user.user_metadata?.name || session.user.email.split('@')[0] || 'User';
+        const userNameSpan = document.getElementById('user-name');
+        if (userNameSpan) {
+          userNameSpan.textContent = userName;
+        }
+        
+        toggleAuthButtons(true);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🔓 [AI Coaching] User signed out');
+        toggleAuthButtons(false);
+        
+        // Redirect to homepage if not already there
+        if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+          console.log('🏠 [AI Coaching] Redirecting to homepage after logout');
+          window.location.href = '/';
+        }
+      }
+    });
+
+    // Initialize authentication immediately and on page load
+    async function initializeAIAuth() {
+      console.log('🚀 [AI Coaching] Initializing authentication...');
+      const user = await checkAuthStateAI();
+      
+      // Always setup logout button (even if not logged in, for when user logs in)
+      setupLogoutButton();
+      
+      console.log('✅ [AI Coaching] Authentication initialization complete');
+    }
+
+    // Run auth check immediately when script loads
+    initializeAIAuth();
+
+    // Also run when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeAIAuth);
+
+    // Also run after a short delay to catch any timing issues
+    setTimeout(initializeAIAuth, 100);
+    setTimeout(initializeAIAuth, 500);
+
+  </script>
+</body>
+</html>

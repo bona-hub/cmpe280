@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gymcyclopedia | Home</title>
+  <!-- Bootstrap CSS (integrity removed to avoid mismatch issues) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts: Poppins (Premium Look) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Supabase JavaScript Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* Ensure the page takes up full height */
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Poppins', 'Inter', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+    }
+
+    /* Pure black background replaced with Gym Hero Image */
+    .bg-cover {
+      background-color: #1a1a1a; /* Fallback color */
+      /* Lighter overlay (0.4 to 0.6) to show more of the image */
+      background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), url('assets/images/gym-hero.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      position: relative;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* When logged in, remove background image and use plain black */
+    body.logged-in .bg-cover {
+      background-image: none;
+      background-color: #000;
+    }
+
+    /* Remove overlay gradient */
+    .bg-cover::before {
+      content: none;
+    }
+
+    /* Ensure hero content sits above overlay */
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+    }
+
+    /* Responsive typo sizes */
+    h1.display-4 {
+      font-weight: 700;
+    }
+
+    /* Button styling for maximum impact */
+    .btn-cta {
+      transition: all 0.3s ease;
+      background-color: #fff;
+      border: 2px solid #fff;
+      color: #000;
+      padding: 1rem 3rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 1rem;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .btn-cta:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #000;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Ensure navbar links stay light */
+    .navbar-dark .navbar-nav .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link.active {
+      color: #fff;
+    }
+
+    /* Brand/title size reduced with premium styling */
+    .navbar-brand {
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+    .navbar-brand:hover {
+      color: #00d4ff;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5), 0 0 20px rgba(0, 212, 255, 0.3);
+      transform: scale(1.05);
+      letter-spacing: 3px;
+    }
+
+    /* Interactive Hero Title Animation */
+    .hero-title-interactive {
+      position: relative;
+      display: inline-block;
+      cursor: default;
+      padding: 10px 0; /* Space for lines */
+    }
+
+    .hero-title-interactive::before,
+    .hero-title-interactive::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #00d4ff, #007bff);
+      transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .hero-title-interactive::before {
+      top: 0;
+    }
+
+    .hero-title-interactive::after {
+      bottom: 0;
+    }
+
+    .hero-title-interactive:hover::before,
+    .hero-title-interactive:hover::after {
+      width: 100%;
+    }
+
+    /* Responsive heading sizing with Nike-like impact */
+    .hero-content h1 {
+      font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      /* Slightly softer shadow to blend better with brighter background */
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+      line-height: 0.9;
+      font-family: 'Impact', 'Poppins', sans-serif;
+    }
+    .hero-content p {
+      font-weight: 500; /* Increased weight for better readability */
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6); /* Stronger shadow for small text */
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Slide-in animation */
+    @keyframes slideUp {
+      0% {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    .slide-in {
+      animation: slideUp 0.8s ease-out forwards;
+    }
+
+    /* Center menu absolute layout on desktop */
+    @media (min-width: 992px) {
+      /* No longer needed after navbar restructure */
+    }
+
+    /* Modal styling improvements */
+    .modal-content {
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    .modal-header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.5rem;
+    }
+    .modal-body {
+      padding: 2rem;
+    }
+    .form-control {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+    .form-control:focus {
+      background-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 300;
+    }
+    .form-label {
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    .modal-title {
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Progress bar styling */
+    .progress {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    .progress-bar {
+      background: linear-gradient(45deg, #007bff, #00d4ff);
+      border-radius: 10px;
+      transition: width 0.8s ease-in-out;
+    }
+
+    /* Stats cards */
+    .border-secondary {
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* Enhanced Typography & Colors */
+    .text-light-enhanced {
+      color: rgba(255, 255, 255, 0.95) !important;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .text-soft-white {
+      color: rgba(255, 255, 255, 0.98) !important;
+      font-weight: 500;
+    }
+
+    .text-premium-gray {
+      color: rgba(255, 255, 255, 0.92) !important;
+      font-weight: 500;
+    }
+
+    .text-elegant {
+      color: rgba(255, 255, 255, 0.98) !important;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    
+    /* Enhanced text readability */
+    .text-light, .text-muted {
+      color: #e0e0e0 !important;
+    }
+    
+    small, .small {
+      color: #d0d0d0 !important;
+    }
+    
+    /* Stats cards */
+    .border-secondary {
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* Premium Button Styling */
+    .btn-primary {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 50%, #004085 100%);
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      padding: 0.85rem 2rem;
+      border-radius: 12px;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0056b3 0%, #004085 50%, #002752 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+    }
+
+    .btn-outline-light {
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.8rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-outline-light:hover {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      color: #000;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Hide auth buttons when logged in */
+    body.logged-in .auth-login-btn,
+    body.logged-in .auth-signup-btn {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-cover d-flex flex-column min-vh-100">
+    <!-- Transparent Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent py-3">
+      <div class="container">
+        <!-- Logo -->
+        <span class="navbar-brand fw-bold">GYMCYCLOPEDIA</span>
+
+        <!-- Mobile Toggler -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Centered Nav Links (HIDDEN until logged in) -->
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+          <ul class="navbar-nav mb-2 mb-lg-0 d-none" id="navLinksList">
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="/workouts.html">Workouts</a></li>
+            <li class="nav-item"><a class="nav-link" href="/ai-coaching.html">AI Coaching</a></li>
+            <li class="nav-item"><a class="nav-link" href="/nutrition-recovery.html">Nutrition & Recovery</a></li>
+            <li class="nav-item"><a class="nav-link" href="/blog.html">Blog</a></li>
+            <li class="nav-item"><a class="nav-link" href="/support.html">Support & Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Auth buttons - show only when NOT logged in -->
+        <div class="d-flex" id="auth-buttons-container">
+          <button class="btn btn-outline-light me-2 auth-login-btn" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+          <button class="btn btn-cta auth-signup-btn" data-bs-toggle="modal" data-bs-target="#signupModal">Sign Up</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section (hidden when logged in) -->
+    <div id="hero-section" class="container flex-grow-1 d-flex align-items-center justify-content-center">
+      <div class="hero-content text-center px-3">
+        <h1 class="display-2 fw-bold mb-3 slide-in hero-title-interactive">Your Fitness Journey Starts Here</h1>
+        <p class="lead mb-4">Join Gymcyclopedia to access workouts, nutrition tips, and community support to reach your goals.</p>
+        <p class="text-muted"><strong>Please log in or sign up above to access all features.</strong></p>
+      </div>
+    </div>
+
+    <!-- User Dashboard (hidden until logged in) -->
+    <section id="user-dashboard" class="container my-5 d-none">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <!-- Welcome Header -->
+          <div class="text-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div></div> <!-- Empty div for spacing -->
+              <div>
+                <h2 class="fw-bold text-white mb-0">Welcome back, <span id="user-name"></span>! 🎯</h2>
+              </div>
+              <div>
+                <button id="signOutBtn" class="btn btn-outline-light btn-sm">
+                  <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+                </button>
+              </div>
+            </div>
+            <p class="text-light">Here's your fitness journey progress</p>
+          </div>
+
+          <!-- Progress Tracking Section -->
+          <div class="card bg-dark text-white border-light mb-4">
+            <div class="card-body">
+              <h3 class="card-title mb-4 text-center">📊 Progress Tracking</h3>
+              
+              <!-- Weight Goal Progress -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h4 class="mb-0">Weight Goal Progress</h4>
+                  <span id="progress-percentage" class="badge bg-primary fs-6">0%</span>
+                </div>
+                <div class="progress mb-2" style="height: 12px;">
+                  <div id="progress-bar" class="progress-bar bg-gradient" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-muted">
+                  <span id="weight-lost">0 kg</span> lost • 
+                  <span id="weight-remaining">0 kg</span> to go
+                </small>
+              </div>
+
+              <!-- Days Remaining Counter -->
+              <div class="row text-center">
+                <div class="col-6">
+                  <div class="border border-secondary rounded p-3">
+                    <h5 class="text-warning mb-1">⏰</h5>
+                    <h4 id="days-remaining" class="fw-bold text-warning">0</h4>
+                    <small class="text-muted">Days Remaining</small>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="border border-secondary rounded p-3">
+                    <h5 class="text-success mb-1">🔥</h5>
+                    <h4 id="streak-counter" class="fw-bold text-success">0</h4>
+                    <small class="text-muted">Day Streak</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Overview -->
+          <div class="card bg-dark text-white border-light">
+            <div class="card-body">
+              <h3 class="card-title mb-4 text-center">📈 Your Stats</h3>
+              <div class="row g-3 text-center">
+                <div class="col-6 col-md-4">
+                  <h4>Current Weight</h4>
+                  <p id="current-weight" class="fs-5 fw-semibold text-primary"></p>
+                </div>
+                <div class="col-6 col-md-4">
+                  <h4>Goal Weight</h4>
+                  <p id="goal-weight" class="fs-5 fw-semibold text-success"></p>
+                </div>
+                <div class="col-6 col-md-4">
+                  <h4>Timeline</h4>
+                  <p id="timeline" class="fs-5 fw-semibold text-warning"></p>
+                </div>
+                <div class="col-6 col-md-4">
+                  <h4>Height</h4>
+                  <p id="height" class="fs-5 fw-semibold"></p>
+                </div>
+                <div class="col-6 col-md-4">
+                  <h4>BMI</h4>
+                  <p id="bmi" class="fs-5 fw-semibold"></p>
+                </div>
+                <div class="col-6 col-md-4">
+                  <h4>Daily Calories</h4>
+                  <p id="calories" class="fs-5 fw-semibold text-info"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h4 class="modal-title fw-bold">Welcome Back</h4>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="loginForm" class="vstack gap-4">
+            <div>
+              <label for="loginEmail" class="form-label small text-uppercase fw-semibold mb-2">Email Address</label>
+              <input type="email" class="form-control" placeholder="Enter your email" required id="loginEmail" aria-required="true">
+            </div>
+            <div>
+              <label for="loginPassword" class="form-label small text-uppercase fw-semibold mb-2">Password</label>
+              <input type="password" class="form-control" placeholder="Enter your password" required id="loginPassword" aria-required="true">
+            </div>
+            <button type="submit" class="btn btn-cta btn-lg mt-3" id="loginSubmitBtn">Sign In</button>
+            <p class="text-danger small mt-2 d-none text-center" id="loginError">Invalid email or password</p>
+            <div class="text-center mt-3">
+              <button type="button" class="btn btn-link text-light small" id="forgotPasswordBtn">
+                Forgot your password?
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign Up Modal -->
+  <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h4 class="modal-title fw-bold">Join Gymcyclopedia</h4>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="signupForm" class="vstack gap-3">
+            <!-- Simplified Account Information -->
+            <div class="row">
+              <div class="col-12">
+                <label for="signupEmail" class="form-label small text-uppercase fw-semibold mb-1">Email Address</label>
+                <input type="email" class="form-control" placeholder="Enter your email" required id="signupEmail" aria-required="true">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <label for="signupPassword" class="form-label small text-uppercase fw-semibold mb-1">Password</label>
+                <input type="password" class="form-control" placeholder="Create a password" required id="signupPassword" aria-required="true">
+              </div>
+            </div>
+
+            <div class="alert alert-info d-flex align-items-center">
+              <i class="fas fa-info-circle me-2"></i>
+              <span>Complete your profile details in the <strong>Progress</strong> tab after signing up!</span>
+            </div>
+
+            <button type="submit" class="btn btn-cta btn-lg mt-3">Create My Account</button>
+            <p class="text-danger small mt-2 d-none text-center" id="signupError">Account already exists with this email</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Reset Modal -->
+  <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h4 class="modal-title fw-bold">Reset Password</h4>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="resetPasswordForm" class="vstack gap-4">
+            <div>
+              <label for="resetEmail" class="form-label small text-uppercase fw-semibold mb-2">Email Address</label>
+              <input type="email" class="form-control" placeholder="Enter your email" required id="resetEmail" aria-required="true" aria-describedby="resetEmailHelp">
+              <small id="resetEmailHelp" class="text-muted mt-1">We'll send a secure reset link to your email</small>
+            </div>
+            <button type="submit" class="btn btn-cta btn-lg mt-3">Send Reset Link</button>
+            <p class="text-danger small mt-2 d-none text-center" id="resetError">Please enter a valid email address</p>
+            <p class="text-success small mt-2 d-none text-center" id="resetSuccess">Reset link sent! Check your email.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (with Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Supabase Integration Script -->
+  <script>
+    // ===== SUPABASE CONFIGURATION =====
+    // Replace with your own Supabase project credentials
+    const SUPABASE_URL = 'https://stojhqobywrvkjaabcvq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0b2pocW9ieXdydmtqYWFiY3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMDcwMDEsImV4cCI6MjA2NTc4MzAwMX0.JQeFsT3nUFMpQ1Tz9uYBnZ3IuE_gBK9P9Du0Igo7Hsg';
+    
+    // Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ===== EMERGENCY CACHE CLEANUP =====
+    // Force unregister any Service Workers that might be caching old code
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          console.log('🚨 Unregistering Service Worker to force update:', registration);
+          registration.unregister();
+        }
+      });
+    }
+    
+    // Clear legacy session data if it looks corrupted (failsafe)
+    try {
+      const key = 'sb-' + new URL(SUPABASE_URL).hostname.split('.')[0] + '-auth-token';
+      const session = localStorage.getItem(key);
+      if (session && session === 'undefined') {
+         console.warn('🗑️ Found corrupted session data, clearing...');
+         localStorage.removeItem(key);
+      }
+    } catch (e) { console.error('Cleanup error', e); }
+
+    /* ===== SUPABASE HELPER FUNCTIONS ===== */
+    
+    // Sign in user
+    async function signInUser(email, password) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
+        
+        if (error) throw error;
+        return { success: true, user: data.user };
+      } catch (error) {
+        console.error('Sign in error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    // Sign out user
+    async function signOutUser() {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        return { success: true };
+      } catch (error) {
+        console.error('Sign out error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    // Reset password (send secure reset link)
+    async function resetPassword(email) {
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password.html`
+        });
+        
+        if (error) throw error;
+        return { success: true };
+      } catch (error) {
+        console.error('Password reset error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    // Get user profile
+    async function getUserProfile(userId) {
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+        
+        if (error) throw error;
+        return { success: true, profile: data };
+      } catch (error) {
+        console.error('Get profile error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    // Update user profile
+    async function updateUserProfile(userId, profileData) {
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .update(profileData)
+          .eq('id', userId)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return { success: true, profile: data };
+      } catch (error) {
+        console.error('Update profile error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    /* ===== UI UPDATE FUNCTIONS ===== */
+    function populateDashboard(profile) {
+      const dash = document.getElementById('user-dashboard');
+      dash.classList.remove('d-none');
+
+      // Basic user info
+      document.getElementById('user-name').textContent = profile.name || 'User';
+      document.getElementById('current-weight').textContent = `${profile.current_weight_kg} kg`;
+      document.getElementById('goal-weight').textContent = `${profile.goal_weight_kg} kg`;
+      document.getElementById('timeline').textContent = `${profile.months_to_goal} months`;
+      document.getElementById('height').textContent = `${profile.height_cm} cm`;
+
+      // Calculate BMI
+      const heightM = profile.height_cm / 100;
+      const bmi = (profile.current_weight_kg / (heightM * heightM)).toFixed(1);
+      document.getElementById('bmi').textContent = bmi;
+      document.getElementById('calories').textContent = `${profile.daily_calories} kcal`;
+
+      // Calculate and display progress tracking
+      updateProgressTracking(profile);
+    }
+
+    function updateProgressTracking(profile) {
+      // Calculate weight progress
+      const currentWeight = profile.current_weight_kg;
+      const goalWeight = profile.goal_weight_kg;
+      const startWeight = profile.start_weight_kg || currentWeight; // Use current as start if no start weight
+      
+      let progressPercentage = 0;
+      let weightLost = 0;
+      let weightRemaining = 0;
+
+      if (startWeight !== goalWeight) {
+        if (goalWeight < startWeight) {
+          // Weight loss goal
+          weightLost = Math.max(0, startWeight - currentWeight);
+          weightRemaining = Math.max(0, currentWeight - goalWeight);
+          const totalToLose = startWeight - goalWeight;
+          progressPercentage = Math.min(100, (weightLost / totalToLose) * 100);
+        } else {
+          // Weight gain goal
+          const weightGained = Math.max(0, currentWeight - startWeight);
+          weightRemaining = Math.max(0, goalWeight - currentWeight);
+          const totalToGain = goalWeight - startWeight;
+          progressPercentage = Math.min(100, (weightGained / totalToGain) * 100);
+          weightLost = weightGained; // Show as "gained" instead of "lost"
+        }
+      }
+
+      // Update progress bar
+      const progressBar = document.getElementById('progress-bar');
+      const progressBadge = document.getElementById('progress-percentage');
+      
+      progressBar.style.width = `${progressPercentage}%`;
+      progressBar.setAttribute('aria-valuenow', progressPercentage);
+      progressBadge.textContent = `${Math.round(progressPercentage)}%`;
+
+      // Update weight lost/remaining
+      document.getElementById('weight-lost').textContent = `${weightLost.toFixed(1)} kg ${goalWeight < startWeight ? 'lost' : 'gained'}`;
+      document.getElementById('weight-remaining').textContent = `${weightRemaining.toFixed(1)} kg to go`;
+
+      // Calculate days remaining
+      const createdDate = new Date(profile.created_at);
+      const goalDate = new Date(createdDate);
+      goalDate.setMonth(goalDate.getMonth() + profile.months_to_goal);
+      
+      const today = new Date();
+      const timeDiff = goalDate.getTime() - today.getTime();
+      const daysRemaining = Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+      
+      document.getElementById('days-remaining').textContent = daysRemaining;
+
+      // Streak counter (placeholder for now - will implement proper tracking later)
+      const streakCount = profile.streak_days || calculateStreakFromProfile(profile);
+      document.getElementById('streak-counter').textContent = streakCount;
+
+      console.log('📊 Progress tracking updated:', {
+        progressPercentage: Math.round(progressPercentage),
+        weightLost: weightLost.toFixed(1),
+        daysRemaining,
+        streak: streakCount
+      });
+    }
+
+    // Temporary streak calculation (we'll improve this with proper logging later)
+    function calculateStreakFromProfile(profile) {
+      // For now, calculate based on how many days since account creation
+      const createdDate = new Date(profile.created_at);
+      const today = new Date();
+      const daysSinceCreation = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
+      
+      // Simple placeholder: assume 1 day streak for every 7 days since creation (just for demo)
+      return Math.min(daysSinceCreation, Math.floor(daysSinceCreation / 7) + 1);
+    }
+
+    function toggleAuthButtons(loggedIn) {
+      const loginBtns = document.querySelectorAll('.auth-login-btn');
+      const signupBtns = document.querySelectorAll('.auth-signup-btn');
+      const authContainer = document.getElementById('auth-buttons-container');
+      const userWelcome = document.getElementById('user-welcome');
+      const navLinksList = document.getElementById('navLinksList');
+      const heroSection = document.getElementById('hero-section');
+      const dashboard = document.getElementById('user-dashboard');
+      
+      console.log(`🔄 Toggling auth state: loggedIn=${loggedIn}`);
+      
+      if (loggedIn) {
+        // User is logged in - hide login/signup container, show nav/dashboard, hide hero
+        if (authContainer) authContainer.classList.add('d-none');
+        
+        loginBtns.forEach(btn => btn.classList.add('d-none'));
+        signupBtns.forEach(btn => btn.classList.add('d-none'));
+        
+        if (userWelcome) userWelcome.classList.remove('d-none');
+        if (navLinksList) navLinksList.classList.remove('d-none');
+        if (heroSection) heroSection.classList.add('d-none');
+        if (dashboard) dashboard.classList.remove('d-none');
+        
+        console.log('✅ AUTH STATE: LOGGED IN - Navigation visible, Dashboard shown');
+      } else {
+        // User is logged out - show login/signup, hide nav/dashboard
+        if (authContainer) authContainer.classList.remove('d-none');
+        
+        loginBtns.forEach(btn => {
+          btn.classList.remove('d-none');
+          btn.style.display = 'inline-block';
+        });
+        signupBtns.forEach(btn => {
+          btn.classList.remove('d-none');
+          btn.style.display = 'inline-block';
+        });
+        
+        if (userWelcome) userWelcome.classList.add('d-none');
+        if (navLinksList) navLinksList.classList.add('d-none');
+        if (heroSection) heroSection.classList.remove('d-none');
+        if (dashboard) dashboard.classList.add('d-none');
+        
+        console.log('✅ AUTH STATE: LOGGED OUT - Only Login/Signup visible');
+      }
+      
+      document.body.classList.toggle('logged-in', loggedIn);
+    }
+
+    function showError(elementId, message) {
+      const errorElement = document.getElementById(elementId);
+      errorElement.textContent = message;
+      errorElement.classList.remove('d-none');
+    }
+
+    function hideError(elementId) {
+      document.getElementById(elementId).classList.add('d-none');
+    }
+
+    /* ===== AUTHENTICATION EVENT HANDLERS ===== */
+    
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Auth state change:', event, session ? 'session exists' : 'no session');
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ User signed in:', session.user.email);
+        
+        // Try to load user profile, but don't fail if it doesn't exist
+        const result = await getUserProfile(session.user.id);
+        if (result.success && result.profile) {
+          console.log('📋 Profile found, showing full dashboard');
+          populateDashboard(result.profile);
+        } else {
+          // Show basic dashboard even without profile data
+          console.log('⚠️ No user profile found, showing basic dashboard');
+          showBasicDashboard(session.user);
+        }
+        toggleAuthButtons(true);
+      } else if (event === 'SIGNED_OUT') {
+        // User signed out, reset UI and ensure we're on the correct page
+        console.log('🔓 User signed out - resetting UI and redirecting to homepage');
+        toggleAuthButtons(false);
+        
+        // If we're not already on the homepage, redirect there
+        if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+          console.log('🏠 Redirecting to homepage after logout');
+          window.location.href = '/index.html';
+        }
+      } else {
+        console.log('ℹ️ Auth event:', event);
+      }
+    });
+
+    /* ===== ON PAGE LOAD ===== */
+    window.addEventListener('DOMContentLoaded', async () => {
+      console.log('🔄 Page loaded - checking authentication state...');
+      
+      // Add modal cleanup handlers to reset button states
+      const loginModal = document.getElementById('loginModal');
+      loginModal.addEventListener('hidden.bs.modal', () => {
+        const submitBtn = document.getElementById('loginSubmitBtn');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        }
+        hideError('loginError');
+      });
+      
+      // Check if user came here to login/signup from another page
+      const urlParams = new URLSearchParams(window.location.search);
+      const action = urlParams.get('action');
+      
+      // Check if user is already logged in
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session && session.user) {
+        console.log('✅ User session found on page load:', session.user.email);
+        
+        const result = await getUserProfile(session.user.id);
+        if (result.success && result.profile) {
+          console.log('📋 User profile loaded, populating dashboard');
+          populateDashboard(result.profile);
+        } else {
+          console.warn('⚠️ No user profile found, showing basic dashboard');
+          showBasicDashboard(session.user);
+        }
+        console.log('🔄 Calling toggleAuthButtons(true) from page load');
+          toggleAuthButtons(true);
+      } else {
+        console.log('❌ No user session found on page load - showing hero page');
+        console.log('🔄 Calling toggleAuthButtons(false) from page load');
+        toggleAuthButtons(false);
+        
+        // If user came here to login/signup, open the appropriate modal
+        if (action === 'login') {
+          console.log('🔓 Opening login modal from URL parameter');
+          setTimeout(() => {
+            const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            loginModal.show();
+          }, 500);
+        } else if (action === 'signup') {
+          console.log('📝 Opening signup modal from URL parameter');
+          setTimeout(() => {
+            const signupModal = new bootstrap.Modal(document.getElementById('signupModal'));
+            signupModal.show();
+          }, 500);
+        }
+      }
+      
+      console.log('✅ Page load authentication check complete');
+      
+      // Setup logout button and brand link after initial auth check
+      setTimeout(() => {
+        setupLogoutButton();
+        setupSignOutButton();
+        setupBrandLink();
+      }, 200);
+      
+      // Setup form event listeners after DOM is ready
+      setupFormListeners();
+    });
+    
+    // Additional failsafe: check auth state when page becomes visible
+    document.addEventListener('visibilitychange', async () => {
+      if (!document.hidden) {
+        console.log('🔄 Page became visible, checking auth state...');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          console.log('🔧 User is logged in, ensuring correct UI state');
+          toggleAuthButtons(true);
+      } else {
+          console.log('🔧 User is logged out, ensuring correct UI state');
+        toggleAuthButtons(false);
+        }
+      }
+    });
+
+    /* ===== FORM EVENT LISTENERS ===== */
+    function setupFormListeners() {
+      /* ===== SIGN UP FORM ===== */
+      document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError('signupError');
+      
+      // Collect simplified form data
+      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+      const password = document.getElementById('signupPassword').value;
+
+      // Sign up the user with minimal data - no email confirmation required
+      const result = await signUpUser(email, password);
+      
+      if (result.success) {
+        // Success - close modal and reset form
+        const modal = bootstrap.Modal.getInstance(document.getElementById('signupModal'));
+        modal.hide();
+        document.getElementById('signupForm').reset();
+        
+        // Show simple success alert
+        alert('Sign up successful! You can now login with your credentials.');
+        
+      } else {
+        // Show error
+        showError('signupError', result.error);
+      }
+    });
+
+    /* ===== LOGIN FORM ===== */
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError('loginError');
+      
+      const submitBtn = document.getElementById('loginSubmitBtn');
+      const originalText = submitBtn.textContent;
+      
+      // Prevent multiple submissions
+      if (submitBtn.disabled) return;
+      
+      // Disable button and show loading state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing In...';
+      
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+
+      const result = await signInUser(email, password);
+      
+      if (result.success) {
+        // Success - close modal and reset form
+        console.log('✅ Login successful, closing modal and forcing auth state');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+        if (modal) modal.hide();
+        document.getElementById('loginForm').reset();
+        
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        
+        // Force immediate UI update
+        setTimeout(() => {
+          console.log('🔧 Forcing logged-in state after login success');
+          toggleAuthButtons(true);
+        }, 300);
+      } else {
+        // Show error and re-enable button
+        showError('loginError', result.error);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    });
+
+    /* ===== FORGOT PASSWORD ===== */
+    document.getElementById('forgotPasswordBtn').addEventListener('click', () => {
+      // Close login modal and open reset password modal
+      const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+      if (loginModal) loginModal.hide();
+      
+      const resetModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+      resetModal.show();
+    });
+
+    /* ===== RESET PASSWORD FORM ===== */
+    document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError('resetError');
+      
+      const resetSuccess = document.getElementById('resetSuccess');
+      resetSuccess.classList.add('d-none');
+      
+      const email = document.getElementById('resetEmail').value.trim().toLowerCase();
+      
+      if (!email) {
+        showError('resetError', 'Please enter your email address');
+        return;
+      }
+
+      const result = await resetPassword(email);
+      
+      if (result.success) {
+        // Show success message
+        resetSuccess.classList.remove('d-none');
+        document.getElementById('resetPasswordForm').reset();
+        
+        // Close modal after 3 seconds
+        setTimeout(() => {
+          const modal = bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal'));
+          if (modal) modal.hide();
+        }, 3000);
+        
+        console.log('🔐 Password reset link sent successfully');
+      } else {
+        showError('resetError', result.error);
+      }
+    });
+    } // End of setupFormListeners
+
+    /* ===== DASHBOARD FUNCTIONS ===== */
+    
+    // Show basic dashboard for users without profile data
+    function showBasicDashboard(user) {
+      console.log('👤 Populating basic dashboard for user:', user.email);
+      
+      // Set basic user info (toggleAuthButtons will handle dashboard/hero visibility)
+      const email = user.email || '';
+      const userName = user.user_metadata?.name || email.split('@')[0] || 'User';
+      document.getElementById('user-name').textContent = userName;
+      
+      // Set default values for stats
+      document.getElementById('current-weight').textContent = '-- kg';
+      document.getElementById('goal-weight').textContent = '-- kg';
+      document.getElementById('timeline').textContent = '-- months';
+      document.getElementById('height').textContent = '-- cm';
+      document.getElementById('calories').textContent = '-- kcal';
+      document.getElementById('bmi').textContent = '--';
+      
+      // Set progress tracking defaults
+      document.getElementById('progress-percentage').textContent = '0%';
+      document.getElementById('progress-bar').style.width = '0%';
+      document.getElementById('weight-lost').textContent = '0 kg';
+      document.getElementById('weight-remaining').textContent = '-- kg';
+      document.getElementById('days-remaining').textContent = '--';
+      document.getElementById('streak-counter').textContent = '1';
+    }
+    
+    // Populate dashboard with user data
+    function populateDashboard(profile) {
+      if (!profile) return;
+      
+      console.log('👤 Populating full dashboard with profile data:', profile);
+      
+      // Update user name (toggleAuthButtons will handle dashboard/hero visibility)
+      document.getElementById('user-name').textContent = profile.name || 'User';
+      
+      // Update stats
+      document.getElementById('current-weight').textContent = `${profile.current_weight_kg || 0} kg`;
+      document.getElementById('goal-weight').textContent = `${profile.goal_weight_kg || 0} kg`;
+      document.getElementById('timeline').textContent = `${profile.months_to_goal || 0} months`;
+      document.getElementById('height').textContent = `${profile.height_cm || 0} cm`;
+      document.getElementById('calories').textContent = `${profile.daily_calories || 0} kcal`;
+      
+      // Calculate BMI
+      if (profile.height_cm && profile.current_weight_kg) {
+        const heightInMeters = profile.height_cm / 100;
+        const bmi = (profile.current_weight_kg / (heightInMeters * heightInMeters)).toFixed(1);
+        document.getElementById('bmi').textContent = bmi;
+      }
+      
+      // Update progress tracking
+      updateProgressTracking(profile);
+    }
+
+    /* ===== AUTHENTICATION FUNCTIONS ===== */
+    
+    // Get user profile from database
+    async function getUserProfile(userId) {
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+        
+        if (error) {
+          // If table doesn't exist or no profile found, return success with null profile
+          if (error.code === '42P01' || error.code === 'PGRST116') {
+            console.log('📋 No user_profiles table found or no profile exists - using basic dashboard');
+            return { success: true, profile: null };
+          }
+          console.error('Error fetching user profile:', error);
+          return { success: false, error: error.message };
+        }
+        
+        return { success: true, profile: data };
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        // Return success with null profile to allow basic dashboard
+        return { success: true, profile: null };
+      }
+    }
+
+    // Sign up new user - no email confirmation required
+    async function signUpUser(email, password, profileData = {}) {
+      try {
+        // First, try to sign up the user
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: profileData
+          }
+        });
+        
+        if (signUpError) {
+          return { success: false, error: signUpError.message };
+        }
+        
+        console.log('✅ User signed up successfully:', signUpData);
+        
+        // If email confirmation is disabled, user should be automatically signed in
+        if (signUpData.user && signUpData.session) {
+          console.log('✅ User automatically signed in after signup');
+          return { success: true, data: signUpData, autoSignedIn: true };
+        }
+        
+        // If no session, try to sign in immediately (email confirmation disabled case)
+        if (signUpData.user && !signUpData.session) {
+          console.log('🔄 Attempting immediate sign in...');
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+          
+          if (!signInError && signInData.session) {
+            console.log('✅ Successfully signed in immediately after signup');
+            return { success: true, data: signInData, autoSignedIn: true };
+          }
+        }
+        
+        // Fallback: email confirmation might still be required
+        return { 
+          success: true, 
+          data: signUpData, 
+          needsConfirmation: true,
+          message: "Account created! If you can't login immediately, please disable email confirmation in Supabase settings."
+        };
+        
+      } catch (error) {
+        console.error('Sign up error:', error);
+        return { success: false, error: 'Failed to create account' };
+      }
+    }
+
+    // Debug function to check button states manually
+    window.debugAuthButtons = function() {
+      const loginBtns = document.querySelectorAll('.auth-login-btn');
+      const signupBtns = document.querySelectorAll('.auth-signup-btn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const heroSection = document.getElementById('hero-section');
+      const dashboard = document.getElementById('user-dashboard');
+      
+      console.log('🔍 CURRENT BUTTON STATES:');
+      console.log(`  📍 Login buttons found: ${loginBtns.length}`);
+      loginBtns.forEach((btn, i) => {
+        console.log(`    Login button ${i+1}: ${btn.classList.contains('d-none') ? 'HIDDEN' : 'VISIBLE'}`);
+      });
+      console.log(`  📍 Signup buttons found: ${signupBtns.length}`);
+      signupBtns.forEach((btn, i) => {
+        console.log(`    Signup button ${i+1}: ${btn.classList.contains('d-none') ? 'HIDDEN' : 'VISIBLE'}`);
+      });
+      console.log(`  📍 Logout button: ${logoutBtn ? (logoutBtn.classList.contains('d-none') ? 'HIDDEN' : 'VISIBLE') : 'NOT FOUND'}`);
+      console.log(`  📍 Hero section: ${heroSection ? (heroSection.classList.contains('d-none') ? 'HIDDEN' : 'VISIBLE') : 'NOT FOUND'}`);
+      console.log(`  📍 Dashboard: ${dashboard ? (dashboard.classList.contains('d-none') ? 'HIDDEN' : 'VISIBLE') : 'NOT FOUND'}`);
+    };
+    
+    // Manual function to force correct auth state
+    window.forceAuthState = function(loggedIn) {
+      console.log(`🔧 FORCING auth state to: ${loggedIn ? 'LOGGED IN' : 'LOGGED OUT'}`);
+      toggleAuthButtons(loggedIn);
+    };
+    
+    // Manual logout function
+    window.manualLogout = async function() {
+      console.log('🔴 MANUAL LOGOUT TRIGGERED');
+      try {
+        const result = await signOutUser();
+        if (result.success) {
+          console.log('✅ Manual logout successful - redirecting to homepage');
+          
+          // Clear any session data
+          localStorage.clear();
+          sessionStorage.clear();
+          
+          // Immediately set logout state
+          toggleAuthButtons(false);
+          
+          // Force redirect to homepage (index.html) to ensure clean state
+          console.log('🏠 Redirecting to homepage with login buttons');
+          window.location.href = '/index.html';
+          
+        } else {
+          console.error('❌ Manual logout failed:', result.error);
+        }
+      } catch (error) {
+        console.error('❌ Manual logout error:', error);
+      }
+    };
+    
+    // Handle brand link click to maintain auth state
+    function setupBrandLink() {
+      const brandLink = document.getElementById('brand-link');
+      if (brandLink) {
+        brandLink.addEventListener('click', async (e) => {
+          // If user is on homepage, prevent default and check auth state
+          if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+            e.preventDefault();
+            
+            // Check current auth state
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session && session.user) {
+              console.log('🏠 Brand clicked - User logged in, showing dashboard');
+              // User is logged in, ensure dashboard is shown
+              toggleAuthButtons(true);
+              
+              // Try to load user profile
+              const result = await getUserProfile(session.user.id);
+              if (result.success && result.profile) {
+                populateDashboard(result.profile);
+              } else {
+                showBasicDashboard(session.user);
+              }
+            } else {
+              console.log('🏠 Brand clicked - User not logged in, showing hero');
+              // User not logged in, show hero section
+              toggleAuthButtons(false);
+            }
+          } else {
+            // User is on a different page, allow normal navigation to homepage
+            console.log('🏠 Brand clicked - Navigating to homepage');
+          }
+        });
+      }
+    }
+     
+    // Add click listener to logout button with multiple methods
+    function setupLogoutButton() {
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        console.log('🔧 Setting up logout button event listeners');
+        
+        // Remove existing listeners and add new ones
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        const newLogoutBtn = document.getElementById('logoutBtn');
+        
+        newLogoutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔓 Logout button clicked via event listener');
+          
+          // Show loading state
+          newLogoutBtn.textContent = 'Logging out...';
+          newLogoutBtn.disabled = true;
+          
+          await manualLogout();
+        });
+        
+        // Also add onclick attribute as backup
+        newLogoutBtn.onclick = async () => {
+          console.log('🔓 Logout button clicked via onclick');
+          await manualLogout();
+        };
+        
+        console.log('✅ Logout button event listeners set up');
+      } else {
+        console.error('❌ Logout button not found!');
+      }
+    }
+
+   // Add click listener to dashboard sign out button
+   function setupSignOutButton() {
+     const signOutBtn = document.getElementById('signOutBtn');
+     if (signOutBtn) {
+       console.log('🔧 Setting up dashboard sign out button event listeners');
+       
+       signOutBtn.addEventListener('click', async (e) => {
+         e.preventDefault();
+         e.stopPropagation();
+         console.log('🔓 Dashboard sign out button clicked');
+         
+         // Show loading state
+         const originalText = signOutBtn.innerHTML;
+         signOutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Signing out...';
+         signOutBtn.disabled = true;
+         
+         await manualLogout();
+       });
+       
+       console.log('✅ Dashboard sign out button event listeners set up');
+     }
+   }
+    
+    // Check auth state every 2 seconds and fix if needed
+    window.authStateChecker = setInterval(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isLoggedIn = !!(session && session.user);
+      
+      const loginVisible = document.querySelector('.auth-login-btn') && !document.querySelector('.auth-login-btn').classList.contains('d-none');
+      const logoutVisible = document.getElementById('logoutBtn') && !document.getElementById('logoutBtn').classList.contains('d-none');
+      
+      // Check if UI state doesn't match auth state
+      if (isLoggedIn && loginVisible) {
+        console.log('🔴 FIXING: User is logged in but login buttons are showing');
+        toggleAuthButtons(true);
+      } else if (!isLoggedIn && logoutVisible) {
+        console.log('🔴 FIXING: User is logged out but logout button is showing');
+        toggleAuthButtons(false);
+      }
+    }, 2000);
+
+    console.log('🚀 Supabase connected successfully!');
+    console.log('🔧 Debug functions available:');
+    console.log('  - debugAuthButtons() - Check current button states');
+    console.log('  - forceAuthState(true/false) - Force auth state');
+    console.log('  - manualLogout() - Force logout manually');
+    console.log('  - Auth state auto-checker running every 2 seconds');
+  </script>
+</body>
+</html> 

@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nutrition & Recovery | Gymcyclopedia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Poppins', 'Inter', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      background-color: #000;
+      color: #fff;
+    }
+    .navbar-brand {
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+    .navbar-brand:hover {
+      color: #00d4ff;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5), 0 0 20px rgba(0, 212, 255, 0.3);
+      transform: scale(1.05);
+      letter-spacing: 3px;
+    }
+    .navbar-dark .navbar-nav .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link.active {
+      color: #fff;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+    }
+    .btn-primary {
+      background: linear-gradient(45deg, #007bff, #00d4ff);
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.5rem;
+    }
+    .btn-outline-light {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-outline-light:hover {
+      background-color: #fff;
+      color: #000;
+      transform: translateY(-2px);
+    }
+    .form-control, .form-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 8px;
+    }
+    .form-control:focus, .form-select:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      color: #fff;
+    }
+    .hero-section {
+      background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(255, 193, 7, 0.05));
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .nutrition-card {
+      background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+      border-left: 4px solid #28a745;
+    }
+    .recovery-card {
+      background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+      border-left: 4px solid #ffc107;
+    }
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .progress-ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(#28a745 var(--progress, 0%), #333 0%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+    .progress-ring::before {
+      content: '';
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #000;
+    }
+    .progress-text {
+      position: absolute;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .status-optimal { color: #28a745; }
+    .status-good { color: #ffc107; }
+    .status-needs-attention { color: #fd7e14; }
+    .status-poor { color: #dc3545; }
+    
+    /* Enhanced text readability */
+    body, .card-body, .card-header, p, span, li, label {
+      color: #ffffff !important;
+    }
+    
+    .card-text, .text-muted {
+      color: #e0e0e0 !important;
+    }
+    
+    .lead {
+      color: #f5f5f5 !important;
+      font-weight: 500;
+    }
+    
+    small {
+      color: #d0d0d0 !important;
+    }
+
+    /* Hide auth buttons when logged in */
+    body.logged-in .auth-login-btn,
+    body.logged-in .auth-signup-btn {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+  
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+    <div class="container">
+      <span class="navbar-brand fw-bold">GYMCYCLOPEDIA</span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="/workouts.html">Workouts</a></li>
+          <li class="nav-item"><a class="nav-link" href="/ai-coaching.html">AI Coaching</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/nutrition-recovery.html">Nutrition & Recovery</a></li>
+          <li class="nav-item"><a class="nav-link" href="/blog.html">Blog</a></li>
+          <li class="nav-item"><a class="nav-link" href="/support.html">Support & Contact</a></li>
+        </ul>
+      </div>
+      <!-- Auth buttons - redirect to homepage for login -->
+      <div class="d-flex">
+        <button class="btn btn-outline-light me-2 auth-login-btn" onclick="window.location.href='/?action=login'">Login</button>
+        <button class="btn btn-primary auth-signup-btn" onclick="window.location.href='/?action=signup'">Sign Up</button>
+        <button id="signOutBtn" class="btn btn-outline-light d-none">
+          <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <div class="hero-section">
+      <h1 class="display-4 fw-bold mb-3">🥗⚡ Nutrition & Recovery Hub</h1>
+      <p class="lead mb-0">Optimize your nutrition and recovery for maximum fitness results</p>
+    </div>
+
+    <!-- Recovery Recommendations -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card recovery-card">
+          <div class="card-header">
+            <h3 class="mb-0">⚡ Recovery Recommendations</h3>
+            <p class="mb-0 mt-2">AI-powered recovery analysis based on your workout intensity</p>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-md-6 mb-4">
+                <h5>Recovery Status</h5>
+                <div class="position-relative">
+                  <div class="progress-ring" style="--progress: 75%"></div>
+                  <div class="progress-text status-optimal">OPTIMAL</div>
+                </div>
+                <p class="mt-3">You're well-recovered and ready for intense training!</p>
+              </div>
+              <div class="col-md-6">
+                <h5>Sleep Tracking</h5>
+                <div class="mb-3">
+                  <label class="form-label">Hours slept last night</label>
+                  <input type="number" class="form-control" id="sleepHours" min="1" max="12" value="8">
+                </div>
+                <button class="btn btn-outline-light" onclick="logSleep()">Log Sleep</button>
+                <div id="sleepStats" class="mt-3">
+                  <small>7-day average: <strong>7.8 hours</strong></small>
+                </div>
+              </div>
+            </div>
+            <div class="row mt-4">
+              <div class="col-12">
+                <h6>Today's Recovery Recommendations:</h6>
+                <ul id="recoveryRecommendations">
+                  <li>✅ Continue with regular training intensity</li>
+                  <li>💧 Maintain hydration (aim for 2.5L water today)</li>
+                  <li>�� Target 7-9 hours of quality sleep tonight</li>
+                  <li>🧘 Consider 10-15 minutes of stretching or meditation</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nutrition Planning -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card nutrition-card">
+          <div class="card-header">
+            <h3 class="mb-0">🥗 Nutrition Planning</h3>
+            <p class="mb-0 mt-2">Track meals and get personalized nutrition recommendations</p>
+          </div>
+          <div class="card-body">
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h5>Log Today's Meals</h5>
+                <div class="mb-3">
+                  <label class="form-label">Meal</label>
+                  <select class="form-select" id="mealType">
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="snack">Snack</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">What did you eat?</label>
+                  <input type="text" class="form-control" id="mealDescription" placeholder="e.g., Grilled chicken with rice and vegetables">
+                </div>
+                <button class="btn btn-primary" onclick="logMeal()">Log Meal</button>
+              </div>
+              <div class="col-md-6">
+                <h5>Daily Nutrition Summary</h5>
+                <div class="row text-center">
+                  <div class="col-4">
+                    <h6>Calories</h6>
+                    <div class="h4 text-info" id="totalCalories">0</div>
+                    <small>/ 2,000 goal</small>
+                  </div>
+                  <div class="col-4">
+                    <h6>Protein</h6>
+                    <div class="h4 text-success" id="totalProtein">0g</div>
+                    <small>/ 120g goal</small>
+                  </div>
+                  <div class="col-4">
+                    <h6>Water</h6>
+                    <div class="h4 text-primary" id="waterIntake">0.0L</div>
+                    <small>/ 2.5L goal</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <h6>Today's Logged Meals:</h6>
+                <div id="mealLog">
+                  <div class="text-muted text-center py-3">
+                    <small>No meals logged today. Start by adding your first meal above! 🍽️</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h6>Hydration Tracker:</h6>
+                <div class="d-flex gap-2 mb-3">
+                  <button class="btn btn-outline-primary btn-sm" onclick="addWater(250)">+250ml</button>
+                  <button class="btn btn-outline-primary btn-sm" onclick="addWater(500)">+500ml</button>
+                  <button class="btn btn-outline-primary btn-sm" onclick="addWater(750)">+750ml</button>
+                </div>
+                <div class="progress mb-2">
+                  <div class="progress-bar bg-info" id="waterProgress" style="width: 0%"></div>
+                </div>
+                <small>0% of daily goal completed 💧</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Overview -->
+    <div class="row">
+      <div class="col-lg-3 mb-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="feature-icon text-warning">⚡</span>
+            <h5 class="card-title">Recovery Tracking</h5>
+            <p class="card-text">Monitor your recovery status and get personalized rest recommendations.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 mb-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="feature-icon text-success">🥗</span>
+            <h5 class="card-title">Meal Planning</h5>
+            <p class="card-text">Log meals and track macronutrients to optimize your nutrition.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 mb-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="feature-icon text-info">💧</span>
+            <h5 class="card-title">Hydration</h5>
+            <p class="card-text">Track daily water intake and stay properly hydrated.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 mb-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="feature-icon text-primary">🛌</span>
+            <h5 class="card-title">Sleep Monitoring</h5>
+            <p class="card-text">Log sleep hours and track your recovery patterns.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    console.log('🥗⚡ Nutrition & Recovery page loaded');
+    
+    // Supabase configuration
+    const SUPABASE_URL = 'https://stojhqobywrvkjaabcvq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0b2pocW9ieXdydmtqYWFiY3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMDcwMDEsImV4cCI6MjA2NTc4MzAwMX0.JQeFsT3nUFMpQ1Tz9uYBnZ3IuE_gBK9P9Du0Igo7Hsg';
+    
+    // Initialize Supabase client - ensure window.supabase is available
+    let supabase;
+    function initializeSupabase() {
+      try {
+        if (window.supabase && window.supabase.createClient) {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('✅ Supabase client initialized');
+          return true;
+        } else {
+          console.warn('⚠️ Supabase library not loaded yet, will retry...');
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ Error initializing Supabase:', error);
+        return false;
+      }
+    }
+    
+    // Try to initialize immediately
+    if (!initializeSupabase()) {
+      // If not available, wait for DOM and try again
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          if (!supabase) initializeSupabase();
+        });
+      }
+      // Also try after a short delay
+      setTimeout(function() {
+        if (!supabase) initializeSupabase();
+      }, 100);
+    }
+    
+    // Global variables for daily totals
+    let dailyWaterIntake = 0; // ml
+    let dailyCalories = 0;
+    let dailyProtein = 0;
+    let dailyCarbs = 0;
+    let dailyFat = 0;
+
+    // Test database connection
+    async function testDatabaseConnection() {
+      console.log('🔍 Testing database connection...');
+      try {
+        // Test basic connection
+        const { data, error } = await supabase
+          .from('sleep_logs')
+          .select('count', { count: 'exact' })
+          .limit(1);
+
+        if (error) {
+          console.error('❌ Database connection test failed:', error);
+          if (error.message.includes('relation') && error.message.includes('does not exist')) {
+            showToast('Database tables not found. Please apply the nutrition-recovery schema in Supabase.', 'error');
+            return false;
+          }
+          return false;
+        }
+        
+        console.log('✅ Database connection successful');
+        return true;
+      } catch (error) {
+        console.error('❌ Database connection error:', error);
+        showToast('Database connection failed. Please check your internet connection.', 'error');
+        return false;
+      }
+    }
+
+    // Check authentication status
+    // Replaced redundant function with the main checkAuthStateNutrition function
+    // to avoid race conditions and duplicate logic
+
+
+    // Toast notification function
+    function showToast(message, type = 'info') {
+      const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+      const toastId = 'toast-' + Date.now();
+      
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'primary'} border-0`;
+      toast.id = toastId;
+      toast.setAttribute('role', 'alert');
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      
+      toastContainer.appendChild(toast);
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      
+      toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
+
+    function createToastContainer() {
+      const container = document.createElement('div');
+      container.className = 'toast-container position-fixed top-0 end-0 p-3';
+      container.style.zIndex = '9999';
+      document.body.appendChild(container);
+      return container;
+    }
+
+    // Get today's date in YYYY-MM-DD format
+    function getTodaysDate() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    // Get current user session
+    async function getCurrentUser() {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting user session:', error);
+          return null;
+        }
+        
+        return session?.user || null;
+      } catch (error) {
+        console.error('Error in getCurrentUser:', error);
+        return null;
+      }
+    }
+
+    // Load today's nutrition data
+    async function loadTodaysNutrition() {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          console.log('No user logged in');
+          return;
+        }
+
+        const today = getTodaysDate();
+        
+        // Load daily nutrition summary
+        const { data: dailyNutrition, error: dailyError } = await supabase
+          .from('daily_nutrition')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .single();
+
+        if (dailyError && dailyError.code !== 'PGRST116') {
+          console.error('Error loading daily nutrition:', dailyError);
+        } else if (dailyNutrition) {
+          dailyCalories = dailyNutrition.total_calories || 0;
+          dailyProtein = dailyNutrition.total_protein || 0;
+          dailyCarbs = dailyNutrition.total_carbs || 0;
+          dailyFat = dailyNutrition.total_fat || 0;
+          dailyWaterIntake = dailyNutrition.water_intake_ml || 0; // Fixed field name
+          
+          updateNutritionDisplay();
+        }
+
+        // Load today's meals
+        const { data: meals, error: mealsError } = await supabase
+          .from('meal_logs')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .order('logged_at', { ascending: true });
+
+        if (mealsError) {
+          console.error('Error loading meals:', mealsError);
+        } else {
+          displayMeals(meals || []);
+        }
+
+      } catch (error) {
+        console.error('Error loading nutrition data:', error);
+      }
+    }
+
+    // Update nutrition display
+    function updateNutritionDisplay() {
+      document.getElementById('totalCalories').textContent = dailyCalories.toLocaleString();
+      document.getElementById('totalProtein').textContent = dailyProtein + 'g';
+      
+      const waterInLiters = (dailyWaterIntake / 1000).toFixed(1);
+      document.getElementById('waterIntake').textContent = waterInLiters + 'L';
+      
+      const percentage = Math.min((dailyWaterIntake / 2500) * 100, 100);
+      document.getElementById('waterProgress').style.width = percentage + '%';
+      
+      const progressText = document.querySelector('.progress').nextElementSibling;
+      progressText.innerHTML = `${Math.round(percentage)}% of daily goal completed 💧`;
+    }
+
+    // Display meals in the UI
+    function displayMeals(meals) {
+      const mealLog = document.getElementById('mealLog');
+      mealLog.innerHTML = '';
+      
+      if (meals.length === 0) {
+        mealLog.innerHTML = `
+          <div class="text-muted text-center py-3">
+            <small>No meals logged today. Start by adding your first meal above! 🍽️</small>
+          </div>
+        `;
+        return;
+      }
+      
+      meals.forEach(meal => {
+        const mealEntry = document.createElement('div');
+        mealEntry.className = 'border rounded p-2 mb-2';
+        mealEntry.innerHTML = `
+          <strong>${meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1)}:</strong> ${meal.description}
+          <small class="text-muted d-block">~${meal.estimated_calories} calories, ${meal.estimated_protein}g protein</small>
+        `;
+        mealLog.appendChild(mealEntry);
+      });
+    }
+
+    // Log sleep to database
+    async function logSleep() {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          showToast('Please log in to track your sleep', 'error');
+          return;
+        }
+
+        const hours = parseFloat(document.getElementById('sleepHours').value);
+        if (!hours || hours < 1 || hours > 12) {
+          showToast('Please enter valid sleep hours (1-12)', 'error');
+          return;
+        }
+
+        // Determine sleep quality based on hours slept
+        let sleepQuality = 3; // Default: average
+        if (hours >= 8) sleepQuality = 4; // Good
+        if (hours >= 9) sleepQuality = 5; // Excellent
+        if (hours < 6) sleepQuality = 2; // Poor
+        if (hours < 5) sleepQuality = 1; // Very poor
+
+        const { error } = await supabase
+          .from('sleep_logs')
+          .insert([{
+            user_id: user.id,
+            date: getTodaysDate(),
+            hours_slept: hours,
+            sleep_quality: sleepQuality, // Integer between 1-5
+            bedtime: null,
+            wake_time: null,
+            notes: null
+          }]);
+
+        if (error) {
+          console.error('Error logging sleep:', error);
+          showToast(`Error saving sleep data: ${error.message}`, 'error');
+        } else {
+          showToast(`Successfully logged ${hours} hours of sleep! 🛌`, 'success');
+          document.getElementById('sleepHours').value = '';
+          
+          // Update sleep stats display
+          updateSleepStats();
+        }
+
+      } catch (error) {
+        console.error('Error logging sleep:', error);
+        showToast('Error saving sleep data', 'error');
+      }
+    }
+
+    // Log meal to database
+    async function logMeal() {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          showToast('Please log in to track your meals', 'error');
+          return;
+        }
+
+        const mealType = document.getElementById('mealType').value;
+        const description = document.getElementById('mealDescription').value.trim();
+        
+        if (!description) {
+          showToast('Please enter a meal description', 'error');
+          return;
+        }
+
+        // Simple calorie/protein estimation based on keywords
+        const estimatedCalories = estimateCalories(description);
+        const estimatedProtein = estimateProtein(description);
+        const estimatedCarbs = estimateCarbs(description);
+        const estimatedFat = estimateFat(description);
+
+        // Insert meal log
+        const { error: mealError } = await supabase
+          .from('meal_logs')
+          .insert([{
+            user_id: user.id,
+            date: getTodaysDate(),
+            meal_type: mealType,
+            description: description,
+            estimated_calories: estimatedCalories,
+            estimated_protein: estimatedProtein,
+            estimated_carbs: estimatedCarbs,
+            estimated_fat: estimatedFat
+          }]);
+
+        if (mealError) {
+          console.error('Error logging meal:', mealError);
+          showToast('Error saving meal data. Please try again.', 'error');
+          return;
+        }
+
+        // Update daily totals
+        dailyCalories += estimatedCalories;
+        dailyProtein += estimatedProtein;
+        dailyCarbs += estimatedCarbs;
+        dailyFat += estimatedFat;
+
+        // Update daily nutrition record
+        await updateDailyNutrition();
+
+        // Update UI
+        updateNutritionDisplay();
+        
+        // Add meal to display
+        const mealLog = document.getElementById('mealLog');
+        const mealEntry = document.createElement('div');
+        mealEntry.className = 'border rounded p-2 mb-2';
+        mealEntry.innerHTML = `
+          <strong>${mealType.charAt(0).toUpperCase() + mealType.slice(1)}:</strong> ${description}
+          <small class="text-muted d-block">~${estimatedCalories} calories, ${estimatedProtein}g protein</small>
+        `;
+        mealLog.appendChild(mealEntry);
+        
+        document.getElementById('mealDescription').value = '';
+        showToast('Meal logged successfully! 🥗', 'success');
+
+      } catch (error) {
+        console.error('Error logging meal:', error);
+        showToast('Error saving meal data', 'error');
+      }
+    }
+
+    // Add water intake to database
+    async function addWater(amount) {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          showToast('Please log in to track your water intake', 'error');
+          return;
+        }
+
+        // Insert water log
+        const { error: waterError } = await supabase
+          .from('water_logs')
+          .insert([{
+            user_id: user.id,
+            date: getTodaysDate(),
+            amount_ml: amount,
+            logged_at: new Date().toISOString()
+          }]);
+
+        if (waterError) {
+          console.error('Error logging water:', waterError);
+          showToast('Error saving water data. Please try again.', 'error');
+          return;
+        }
+
+        // Update daily water intake
+        dailyWaterIntake += amount;
+        
+        // Update daily nutrition record
+        await updateDailyNutrition();
+        
+        // Update UI
+        updateNutritionDisplay();
+        
+        const percentage = Math.min((dailyWaterIntake / 2500) * 100, 100);
+        if (percentage >= 100) {
+          showToast('🎉 Congratulations! You\'ve reached your daily hydration goal!', 'success');
+        } else {
+          showToast(`Added ${amount}ml water! 💧`, 'success');
+        }
+
+      } catch (error) {
+        console.error('Error adding water:', error);
+        showToast('Error saving water data', 'error');
+      }
+    }
+
+    // Update daily nutrition summary
+    async function updateDailyNutrition() {
+      try {
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        const { error } = await supabase
+          .from('daily_nutrition')
+          .upsert([{
+            user_id: user.id,
+            date: getTodaysDate(),
+            total_calories: dailyCalories,
+            total_protein: dailyProtein,
+            total_carbs: dailyCarbs,
+            total_fat: dailyFat,
+            water_intake_ml: dailyWaterIntake // Fixed field name
+          }], { 
+            onConflict: 'user_id,date'
+          });
+
+        if (error) {
+          console.error('Error updating daily nutrition:', error);
+        }
+
+      } catch (error) {
+        console.error('Error updating daily nutrition:', error);
+      }
+    }
+
+    // Update sleep statistics display
+    async function updateSleepStats() {
+      try {
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        // Get sleep data from the last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const { data: sleepLogs, error } = await supabase
+          .from('sleep_logs')
+          .select('hours_slept')
+          .eq('user_id', user.id)
+          .gte('date', sevenDaysAgo.toISOString().split('T')[0])
+          .order('date', { ascending: false });
+
+        if (error) {
+          console.error('Error loading sleep stats:', error);
+          return;
+        }
+
+        if (sleepLogs && sleepLogs.length > 0) {
+          const totalHours = sleepLogs.reduce((sum, log) => sum + log.hours_slept, 0);
+          const averageHours = (totalHours / sleepLogs.length).toFixed(1);
+          
+          document.getElementById('sleepStats').innerHTML = 
+            `<small>7-day average: <strong>${averageHours} hours</strong> (${sleepLogs.length} nights logged)</small>`;
+        }
+
+      } catch (error) {
+        console.error('Error updating sleep stats:', error);
+      }
+    }
+
+    // Simple food estimation functions
+    function estimateCalories(description) {
+      const desc = description.toLowerCase();
+      let calories = 200; // base estimate
+      
+      if (desc.includes('chicken') || desc.includes('beef') || desc.includes('pork')) calories += 150;
+      if (desc.includes('rice') || desc.includes('pasta') || desc.includes('bread')) calories += 100;
+      if (desc.includes('cheese') || desc.includes('nuts') || desc.includes('oil')) calories += 80;
+      if (desc.includes('salad') || desc.includes('vegetables') || desc.includes('veggie')) calories -= 50;
+      if (desc.includes('protein powder') || desc.includes('shake')) calories += 100;
+      
+      return Math.max(50, Math.min(800, calories + Math.floor(Math.random() * 50)));
+    }
+
+    function estimateProtein(description) {
+      const desc = description.toLowerCase();
+      let protein = 10; // base estimate
+      
+      if (desc.includes('chicken') || desc.includes('beef') || desc.includes('pork')) protein += 20;
+      if (desc.includes('fish') || desc.includes('salmon') || desc.includes('tuna')) protein += 25;
+      if (desc.includes('eggs')) protein += 12;
+      if (desc.includes('protein powder') || desc.includes('shake')) protein += 20;
+      if (desc.includes('nuts') || desc.includes('beans')) protein += 8;
+      if (desc.includes('cheese') || desc.includes('yogurt')) protein += 10;
+      
+      return Math.max(5, Math.min(50, protein + Math.floor(Math.random() * 5)));
+    }
+
+    function estimateCarbs(description) {
+      const desc = description.toLowerCase();
+      let carbs = 15;
+      
+      if (desc.includes('rice') || desc.includes('pasta') || desc.includes('bread')) carbs += 30;
+      if (desc.includes('potato') || desc.includes('sweet potato')) carbs += 25;
+      if (desc.includes('fruit') || desc.includes('banana') || desc.includes('apple')) carbs += 20;
+      if (desc.includes('oatmeal') || desc.includes('cereal')) carbs += 25;
+      
+      return Math.max(5, Math.min(80, carbs));
+    }
+
+    function estimateFat(description) {
+      const desc = description.toLowerCase();
+      let fat = 5;
+      
+      if (desc.includes('nuts') || desc.includes('avocado') || desc.includes('oil')) fat += 15;
+      if (desc.includes('cheese') || desc.includes('butter')) fat += 10;
+      if (desc.includes('beef') || desc.includes('pork')) fat += 8;
+      if (desc.includes('salmon') || desc.includes('fish')) fat += 5;
+      
+      return Math.max(2, Math.min(30, fat));
+    }
+
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('🥗⚡ Nutrition & Recovery page initializing...');
+      
+      // Test database connection first
+      const dbConnected = await testDatabaseConnection();
+      if (!dbConnected) {
+        console.error('❌ Database connection failed - some features may not work');
+        return;
+      }
+      
+      // Check authentication
+      const user = await checkAuthStateNutrition();
+      if (!user) {
+        console.error('❌ Authentication failed - redirecting to home');
+        return;
+      }
+      
+      // Load data now that we're connected and authenticated
+      console.log('✅ Loading nutrition data...');
+      await loadTodaysNutrition();
+      await updateSleepStats();
+      
+      console.log('✅ Nutrition & Recovery page fully loaded');
+    });
+
+    /* ===== AUTHENTICATION SYSTEM ===== */
+    
+    // Toggle authentication buttons based on login state
+    function toggleAuthButtons(loggedIn) {
+      const loginBtns = document.querySelectorAll('.auth-login-btn');
+      const signupBtns = document.querySelectorAll('.auth-signup-btn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      const userWelcome = document.getElementById('user-welcome');
+      
+      console.log(`🔄 [Nutrition] Toggling auth state: loggedIn=${loggedIn}`);
+      console.log('🔍 [Nutrition] Found elements:', {
+        loginBtns: loginBtns.length,
+        signupBtns: signupBtns.length,
+        logoutBtn: !!logoutBtn,
+        signOutBtn: !!signOutBtn,
+        userWelcome: !!userWelcome
+      });
+      
+      if (loggedIn) {
+        // User is logged in - FORCE HIDE login/signup, FORCE SHOW logout and welcome
+        loginBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'inline-block';
+          logoutBtn.classList.remove('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'inline-block';
+          signOutBtn.classList.remove('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'inline-block';
+          userWelcome.classList.remove('d-none');
+        }
+        document.body.classList.add('logged-in');
+        document.body.classList.remove('logged-out');
+        
+        console.log('✅ [Nutrition] AUTH STATE: LOGGED IN - Login/Signup HIDDEN, Sign Out SHOWN');
+      } else {
+        // User is logged out - FORCE SHOW login/signup, FORCE HIDE logout and welcome  
+        loginBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'none';
+          logoutBtn.classList.add('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'none';
+          signOutBtn.classList.add('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'none';
+          userWelcome.classList.add('d-none');
+        }
+        document.body.classList.remove('logged-in');
+        document.body.classList.add('logged-out');
+        
+        console.log('✅ [Nutrition] AUTH STATE: LOGGED OUT - Login/Signup SHOWN, Sign Out HIDDEN');
+      }
+    }
+
+    // Setup logout functionality
+    function setupLogoutButton() {
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      
+      if (logoutBtn) {
+        // Remove any existing listeners
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        const newLogoutBtn = document.getElementById('logoutBtn');
+        
+        newLogoutBtn.addEventListener('click', async () => {
+          try {
+            console.log('🔓 [Nutrition] Logout button clicked');
+            await supabase.auth.signOut();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[Nutrition] Logout error:', error);
+          }
+        });
+        console.log('✅ [Nutrition] Logout button setup complete');
+      }
+      
+      if (signOutBtn) {
+        signOutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔓 [Nutrition] Sign out button clicked');
+          
+          // Show loading state
+          const originalText = signOutBtn.innerHTML;
+          signOutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Signing out...';
+          signOutBtn.disabled = true;
+          
+          try {
+            await supabase.auth.signOut();
+            console.log('✅ [Nutrition] Sign out successful - redirecting to homepage');
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[Nutrition] Sign out error:', error);
+            signOutBtn.innerHTML = originalText;
+            signOutBtn.disabled = false;
+          }
+        });
+        console.log('✅ [Nutrition] Sign out button setup complete');
+      }
+    }
+
+    // Check authentication state on page load
+    async function checkAuthStateNutrition() {
+      try {
+        console.log('🔄 [Nutrition] Checking authentication state...');
+        
+        // Check if Supabase client is available
+        if (!supabase || !supabase.auth) {
+          console.error('❌ [Nutrition] Supabase client not initialized');
+          // Wait a bit and try again
+          setTimeout(checkAuthStateNutrition, 500);
+          return null;
+        }
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session && session.user) {
+          console.log('✅ [Nutrition] User is logged in:', session.user.email);
+          
+          // IMMEDIATELY set logged-in class to hide buttons
+          document.body.classList.add('logged-in');
+          document.body.classList.remove('logged-out');
+          
+          // Update user name in welcome message
+          // Use optional chaining for safety
+          const userName = session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User';
+          const userNameSpan = document.getElementById('user-name');
+          if (userNameSpan) {
+            userNameSpan.textContent = userName;
+          }
+          
+          toggleAuthButtons(true);
+          return session.user;
+        } else {
+          console.log('❌ [Nutrition] No user session found');
+          
+          // IMMEDIATELY set logged-out class
+          document.body.classList.remove('logged-in');
+          document.body.classList.add('logged-out');
+          
+          toggleAuthButtons(false);
+          
+          // Redirect to homepage if not logged in
+          console.log('🏠 [Nutrition] Redirecting to homepage - please log in');
+          window.location.href = '/';
+          return null;
+        }
+      } catch (error) {
+        console.error('[Nutrition] Auth check error:', error);
+        toggleAuthButtons(false);
+        window.location.href = '/';
+        return null;
+      }
+    }
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 [Nutrition] Auth state change:', event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ [Nutrition] User signed in:', session.user.email);
+        
+        const userName = session.user.user_metadata?.name || session.user.email.split('@')[0] || 'User';
+        const userNameSpan = document.getElementById('user-name');
+        if (userNameSpan) {
+          userNameSpan.textContent = userName;
+        }
+        
+        toggleAuthButtons(true);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🔓 [Nutrition] User signed out');
+        toggleAuthButtons(false);
+        
+        // Redirect to homepage if not already there
+        if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+          console.log('🏠 [Nutrition] Redirecting to homepage after logout');
+          window.location.href = '/';
+        }
+      }
+    });
+
+    // Initialize authentication immediately and on page load
+    async function initializeNutritionAuth() {
+      console.log('🚀 [Nutrition] Initializing authentication...');
+      const user = await checkAuthStateNutrition();
+      
+      // Always setup logout button (even if not logged in, for when user logs in)
+      setupLogoutButton();
+      
+      console.log('✅ [Nutrition] Authentication initialization complete');
+    }
+
+    // Run auth check immediately when script loads
+    initializeNutritionAuth();
+
+    // Also run when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeNutritionAuth);
+
+    // Also run after a short delay to catch any timing issues
+    setTimeout(initializeNutritionAuth, 100);
+    setTimeout(initializeNutritionAuth, 500);
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,3173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blog | Gymcyclopedia</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Supabase JavaScript Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* Base styles matching the main app */
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Poppins', 'Inter', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      background-color: #000;
+      color: #fff;
+    }
+
+    /* Navbar styling */
+    .navbar-brand {
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+    .navbar-brand:hover {
+      color: #00d4ff;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5), 0 0 20px rgba(0, 212, 255, 0.3);
+      transform: scale(1.05);
+      letter-spacing: 3px;
+    }
+
+    .navbar-dark .navbar-nav .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link.active {
+      color: #fff;
+    }
+
+    /* Card styling */
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Button styling */
+    .btn-primary {
+      background: linear-gradient(45deg, #007bff, #00d4ff);
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.5rem;
+    }
+
+    .btn-outline-light {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline-light:hover {
+      background-color: #fff;
+      color: #000;
+      transform: translateY(-2px);
+    }
+
+    /* Blog specific styles */
+    .hero-section {
+      background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 212, 255, 0.05));
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .category-filter {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .category-badge {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.25rem;
+    }
+
+    .category-badge:hover,
+    .category-badge.active {
+      background: #007bff;
+      border-color: #007bff;
+      color: #fff;
+    }
+
+    .blog-card {
+      cursor: pointer;
+      height: 100%;
+    }
+
+    .blog-card .card-img-top {
+      height: 200px;
+      background: linear-gradient(45deg, rgba(0, 123, 255, 0.3), rgba(0, 212, 255, 0.3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      border-radius: 15px 15px 0 0;
+    }
+
+    .blog-meta {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .read-time {
+      background: rgba(0, 123, 255, 0.2);
+      padding: 0.25rem 0.75rem;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.95) !important;
+      font-weight: 500;
+    }
+
+    /* Ensure small text elements are bright */
+    .card small {
+      color: rgba(255, 255, 255, 0.95) !important;
+      font-weight: 500;
+    }
+
+    /* Override any Bootstrap small text styling */
+    small {
+      color: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    .search-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      padding: 0.75rem 1.5rem;
+      color: #fff;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .search-box:focus {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      color: #fff;
+      outline: none;
+    }
+
+    .search-box::placeholder {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Override Bootstrap's muted text to be more readable */
+    .text-muted {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    /* Make card titles bright and bold */
+    .card-title {
+      color: rgba(255, 255, 255, 0.98) !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Make card text content very readable */
+    .card-text {
+      color: rgba(255, 255, 255, 0.92) !important;
+      font-weight: 450 !important;
+      line-height: 1.6;
+    }
+
+    /* Make card body text bright */
+    .card-body {
+      color: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    /* Ensure all text in cards is bright */
+    .card * {
+      color: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    /* Specifically target any remaining dim text */
+    .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+      color: rgba(255, 255, 255, 0.98) !important;
+      font-weight: 600 !important;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Enhanced Typography & Colors */
+    .text-light-enhanced {
+      color: rgba(255, 255, 255, 0.95) !important;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .text-soft-white {
+      color: rgba(255, 255, 255, 0.98) !important;
+      font-weight: 500;
+    }
+
+    .text-premium-gray {
+      color: rgba(255, 255, 255, 0.95) !important;
+      font-weight: 500;
+    }
+
+    .text-elegant {
+      color: rgba(255, 255, 255, 0.98) !important;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    
+    /* Enhanced text readability */
+    .card-text, .text-muted {
+      color: #e0e0e0 !important;
+    }
+    
+    small, .small {
+      color: #d0d0d0 !important;
+    }
+
+    /* Enhanced Card Styling Updates */
+    .card {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      backdrop-filter: blur(15px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.15);
+      border-color: rgba(0, 123, 255, 0.3);
+    }
+
+    /* Premium Button Styling Updates */
+    .btn-primary {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 50%, #004085 100%);
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      padding: 0.85rem 2rem;
+      border-radius: 12px;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0056b3 0%, #004085 50%, #002752 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+    }
+
+    .btn-outline-light {
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.8rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-outline-light:hover {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      color: #000;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Hide auth buttons when logged in */
+    body.logged-in .auth-login-btn,
+    body.logged-in .auth-signup-btn {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-transparent py-3 border-bottom border-secondary">
+    <div class="container">
+      <span class="navbar-brand fw-bold">GYMCYCLOPEDIA</span>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav mb-2 mb-lg-0">
+                      <li class="nav-item"><a class="nav-link" href="/workouts.html">Workouts</a></li>
+          <li class="nav-item"><a class="nav-link" href="/ai-coaching.html">AI Coaching</a></li>
+          <li class="nav-item"><a class="nav-link" href="/nutrition-recovery.html">Nutrition & Recovery</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/blog.html">Blog</a></li>
+          <li class="nav-item"><a class="nav-link" href="/support.html">Support & Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- Auth buttons - redirect to homepage for login -->
+      <div class="d-flex">
+        <button class="btn btn-outline-light me-2 auth-login-btn" onclick="window.location.href='/?action=login'">Login</button>
+        <button class="btn btn-primary auth-signup-btn" onclick="window.location.href='/?action=signup'">Sign Up</button>
+        <button id="signOutBtn" class="btn btn-outline-light d-none">
+          <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container my-5">
+    <!-- Hero Section -->
+    <div class="hero-section fade-in-up">
+      <h1 class="display-4 fw-bold mb-3">📚 Fitness Knowledge Hub</h1>
+      <p class="lead">Expert insights, workout tips, and fitness science to fuel your journey</p>
+      
+      <!-- Search Bar -->
+      <div class="d-flex justify-content-center mt-4">
+        <input type="text" class="search-box" placeholder="🔍 Search articles..." id="searchInput">
+      </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="category-filter fade-in-up">
+      <h5 class="mb-3">📂 Browse by Category:</h5>
+      <div class="d-flex flex-wrap" id="categoryFilter">
+        <span class="category-badge active" data-category="all">All Articles</span>
+        <span class="category-badge" data-category="workout-guides">💪 Workout Guides</span>
+        <span class="category-badge" data-category="technique">🎯 Exercise Technique</span>
+        <span class="category-badge" data-category="nutrition">🥗 Nutrition & Recovery</span>
+        <span class="category-badge" data-category="motivation">🔥 Motivation & Mindset</span>
+      </div>
+    </div>
+
+    <!-- Blog Articles -->
+    <div class="row" id="blogArticles">
+      <!-- Workout Guides Articles -->
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="workout-guides">
+        <div class="card blog-card">
+          <div class="card-img-top">💪</div>
+          <div class="card-body">
+            <h5 class="card-title">5 Essential Compound Movements for Beginners</h5>
+            <p class="card-text text-muted">Master these fundamental exercises to build a strong foundation for your fitness journey.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Jan 15, 2024</small>
+              <span class="read-time">5 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="workout-guides">
+        <div class="card blog-card">
+          <div class="card-img-top">📈</div>
+          <div class="card-body">
+            <h5 class="card-title">Progressive Overload: The Science of Getting Stronger</h5>
+            <p class="card-text text-muted">Understand the key principle behind muscle growth and strength development.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Jan 12, 2024</small>
+              <span class="read-time">7 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="workout-guides">
+        <div class="card blog-card">
+          <div class="card-img-top">🏠</div>
+          <div class="card-body">
+            <h5 class="card-title">Home vs. Gym Workouts: Maximizing Results Anywhere</h5>
+            <p class="card-text text-muted">Learn how to achieve your fitness goals whether you're training at home or in the gym.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Jan 10, 2024</small>
+              <span class="read-time">6 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="workout-guides">
+        <div class="card blog-card">
+          <div class="card-img-top">🔢</div>
+          <div class="card-body">
+            <h5 class="card-title">Understanding Rep Ranges: Strength vs. Hypertrophy vs. Endurance</h5>
+            <p class="card-text text-muted">Learn how different rep ranges target different fitness goals and adaptations.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Jan 7, 2024</small>
+              <span class="read-time">6 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exercise Technique Articles -->
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="technique">
+        <div class="card blog-card">
+          <div class="card-img-top">🏋️</div>
+          <div class="card-body">
+            <h5 class="card-title">Perfect Your Deadlift: Form Breakdown</h5>
+            <p class="card-text text-muted">A comprehensive guide to mastering one of the most effective exercises.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Jan 8, 2024</small>
+              <span class="read-time">8 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="technique">
+        <div class="card blog-card">
+          <div class="card-img-top">🦵</div>
+          <div class="card-body">
+            <h5 class="card-title">Common Squat Mistakes and How to Fix Them</h5>
+            <p class="card-text text-muted">Avoid these common pitfalls and improve your squat technique for better results.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Jan 5, 2024</small>
+              <span class="read-time">6 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="technique">
+        <div class="card blog-card">
+          <div class="card-img-top">🚣</div>
+          <div class="card-body">
+            <h5 class="card-title">Upper Body Pull Patterns: Rows vs. Pull-ups</h5>
+            <p class="card-text text-muted">Understanding different pulling movements and when to use each one.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Jan 3, 2024</small>
+              <span class="read-time">5 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nutrition & Recovery Articles -->
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="nutrition">
+        <div class="card blog-card">
+          <div class="card-img-top">🍎</div>
+          <div class="card-body">
+            <h5 class="card-title">Pre and Post-Workout Nutrition Guide</h5>
+            <p class="card-text text-muted">Optimize your performance and recovery with proper nutrition timing.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Dec 30, 2023</small>
+              <span class="read-time">7 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="nutrition">
+        <div class="card blog-card">
+          <div class="card-img-top">😴</div>
+          <div class="card-body">
+            <h5 class="card-title">The Importance of Sleep for Muscle Recovery</h5>
+            <p class="card-text text-muted">Discover why quality sleep is crucial for your fitness progress.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Dec 28, 2023</small>
+              <span class="read-time">6 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="nutrition">
+        <div class="card blog-card">
+          <div class="card-img-top">💧</div>
+          <div class="card-body">
+            <h5 class="card-title">Hydration: The Overlooked Performance Factor</h5>
+            <p class="card-text text-muted">Learn how proper hydration can dramatically improve your workout performance.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Dec 25, 2023</small>
+              <span class="read-time">4 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Motivation & Mindset Articles -->
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="motivation">
+        <div class="card blog-card">
+          <div class="card-img-top">🎯</div>
+          <div class="card-body">
+            <h5 class="card-title">Building Sustainable Fitness Habits</h5>
+            <p class="card-text text-muted">Create lasting change with these proven habit-building strategies.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Dec 22, 2023</small>
+              <span class="read-time">8 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="motivation">
+        <div class="card blog-card">
+          <div class="card-img-top">⚡</div>
+          <div class="card-body">
+            <h5 class="card-title">Overcoming Workout Plateaus</h5>
+            <p class="card-text text-muted">Break through training plateaus and continue making progress.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Dec 20, 2023</small>
+              <span class="read-time">6 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4 blog-item" data-category="motivation">
+        <div class="card blog-card">
+          <div class="card-img-top">🌟</div>
+          <div class="card-body">
+            <h5 class="card-title">Setting SMART Fitness Goals</h5>
+            <p class="card-text text-muted">Learn to set goals that are specific, measurable, achievable, relevant, and time-bound.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="blog-meta">Dec 18, 2023</small>
+              <span class="read-time">5 min read</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div id="noResults" class="text-center py-5 d-none">
+      <h4 class="text-muted">🔍 No articles found</h4>
+      <p class="text-muted">Try adjusting your search or category filter</p>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://stojhqobywrvkjaabcvq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0b2pocW9ieXdydmtqYWFiY3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMDcwMDEsImV4cCI6MjA2NTc4MzAwMX0.JQeFsT3nUFMpQ1Tz9uYBnZ3IuE_gBK9P9Du0Igo7Hsg';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Show article function
+    function showArticle(title) {
+      const articles = {
+        'Progressive Overload: The Science of Getting Stronger': {
+          content: `
+            <div class="article-content">
+              <h2>Progressive Overload: The Science of Getting Stronger</h2>
+              <p class="lead">Progressive overload is the fundamental principle behind all muscle growth and strength gains. Understanding and applying this concept is crucial for anyone serious about fitness progress.</p>
+              
+              <h3>What is Progressive Overload?</h3>
+              <p>Progressive overload is the gradual increase of stress placed on your muscles during exercise training. This principle was first scientifically documented in the 1950s and remains the cornerstone of effective resistance training today.</p>
+              
+              <h3>The Science Behind It</h3>
+              <p>When you challenge your muscles beyond their current capacity, they adapt by becoming stronger and larger. Research shows that this adaptation occurs through:</p>
+              <ul>
+                <li><strong>Myofibrillar hypertrophy:</strong> Increase in muscle protein synthesis</li>
+                <li><strong>Neural adaptations:</strong> Improved motor unit recruitment</li>
+                <li><strong>Metabolic adaptations:</strong> Enhanced energy systems</li>
+              </ul>
+              
+              <h3>Methods of Progressive Overload</h3>
+              <ol>
+                <li><strong>Increase Weight:</strong> Add more resistance to your exercises</li>
+                <li><strong>Increase Repetitions:</strong> Perform more reps with the same weight</li>
+                <li><strong>Increase Sets:</strong> Add additional sets to your workout</li>
+                <li><strong>Increase Frequency:</strong> Train muscle groups more often</li>
+                <li><strong>Improve Range of Motion:</strong> Work through fuller movement patterns</li>
+                <li><strong>Increase Time Under Tension:</strong> Slow down the eccentric phase</li>
+              </ol>
+              
+              <h3>Practical Application</h3>
+              <p>Current research suggests that a 2-10% increase in training variables weekly is optimal for most individuals. This allows for consistent progress while avoiding overtraining.</p>
+              
+              <div class="alert alert-info">
+                <h4>Weekly Progression Guidelines:</h4>
+                <ul>
+                  <li>Beginners: 5-10% increases</li>
+                  <li>Intermediate: 2-5% increases</li>
+                  <li>Advanced: 1-3% increases</li>
+                </ul>
+              </div>
+              
+              <h3>Common Mistakes to Avoid</h3>
+              <ul>
+                <li>Progressing too quickly and risking injury</li>
+                <li>Not tracking progress systematically</li>
+                <li>Ignoring recovery and sleep</li>
+                <li>Focusing only on weight increases</li>
+              </ul>
+              
+              <h3>The Bottom Line</h3>
+              <p>Progressive overload isn't just about lifting heavier weights—it's about consistently challenging your body in measurable ways. Whether you're a beginner or advanced athlete, this principle will drive your success in the gym.</p>
+            </div>
+          `
+        },
+        '5 Essential Compound Movements Every Beginner Should Master': {
+          content: `
+            <div class="article-content">
+              <h2>5 Essential Compound Movements Every Beginner Should Master</h2>
+              <p class="lead">Master these five foundational exercises to build a strong, functional physique. These compound movements work multiple muscle groups simultaneously and form the backbone of any effective training program.</p>
+              
+              <h3>Why Compound Movements?</h3>
+              <p>Research consistently shows that compound exercises provide superior muscle activation, hormonal response, and functional strength compared to isolation exercises. They're time-efficient and translate better to real-world activities.</p>
+              
+              <div class="row mt-4">
+                <div class="col-md-6">
+                  <h3>1. The Squat</h3>
+                  <p><strong>Primary muscles:</strong> Quadriceps, glutes, hamstrings, core</p>
+                  <p><strong>Why it matters:</strong> Often called the "king of exercises," squats develop lower body power and core stability essential for daily activities.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Bodyweight squats</li>
+                    <li>Goblet squats</li>
+                    <li>Front squats</li>
+                    <li>Back squats</li>
+                  </ul>
+                  
+                  <h4>Key Technique Points:</h4>
+                  <ul>
+                    <li>Feet shoulder-width apart</li>
+                    <li>Chest up, core braced</li>
+                    <li>Knees track over toes</li>
+                    <li>Hip hinge movement pattern</li>
+                  </ul>
+                </div>
+                
+                <div class="col-md-6">
+                  <h3>2. The Deadlift</h3>
+                  <p><strong>Primary muscles:</strong> Hamstrings, glutes, erector spinae, traps, lats</p>
+                  <p><strong>Why it matters:</strong> Builds total-body strength and teaches proper lifting mechanics for daily activities.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Romanian deadlifts</li>
+                    <li>Trap bar deadlifts</li>
+                    <li>Conventional deadlifts</li>
+                    <li>Sumo deadlifts</li>
+                  </ul>
+                  
+                  <h4>Key Technique Points:</h4>
+                  <ul>
+                    <li>Neutral spine throughout</li>
+                    <li>Bar close to body</li>
+                    <li>Hip hinge movement</li>
+                    <li>Engage lats and core</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-6">
+                  <h3>3. The Push-Up/Bench Press</h3>
+                  <p><strong>Primary muscles:</strong> Chest, shoulders, triceps, core</p>
+                  <p><strong>Why it matters:</strong> Develops upper body pushing strength and shoulder stability.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Wall push-ups</li>
+                    <li>Incline push-ups</li>
+                    <li>Standard push-ups</li>
+                    <li>Bench press variations</li>
+                  </ul>
+                </div>
+                
+                <div class="col-md-6">
+                  <h3>4. The Pull-Up/Row</h3>
+                  <p><strong>Primary muscles:</strong> Lats, rhomboids, rear delts, biceps</p>
+                  <p><strong>Why it matters:</strong> Balances pushing movements and improves posture.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Assisted pull-ups</li>
+                    <li>Negative pull-ups</li>
+                    <li>Band-assisted pull-ups</li>
+                    <li>Full pull-ups</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <h3>5. The Overhead Press</h3>
+                  <p><strong>Primary muscles:</strong> Shoulders, triceps, upper chest, core</p>
+                  <p><strong>Why it matters:</strong> Develops functional shoulder strength and stability crucial for overhead activities.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Seated dumbbell press</li>
+                    <li>Standing dumbbell press</li>
+                    <li>Military press</li>
+                    <li>Push press</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <h3>Programming These Movements</h3>
+              <div class="alert alert-success">
+                <h4>Beginner Template:</h4>
+                <ul>
+                  <li><strong>Frequency:</strong> 2-3 times per week</li>
+                  <li><strong>Sets:</strong> 3-4 sets per exercise</li>
+                  <li><strong>Reps:</strong> 8-12 repetitions</li>
+                  <li><strong>Rest:</strong> 60-90 seconds between sets</li>
+                </ul>
+              </div>
+              
+              <h3>Safety First</h3>
+              <p>Always prioritize proper form over weight lifted. Start with bodyweight or light weights and focus on movement quality. Consider working with a qualified trainer when learning these movements.</p>
+            </div>
+          `
+        },
+        'Home Workouts vs. Gym: Which is More Effective?': {
+          content: `
+            <div class="article-content">
+              <h2>Home Workouts vs. Gym: Which is More Effective?</h2>
+              <p class="lead">The age-old debate: can you achieve the same results training at home as you can in a fully equipped gym? Recent research provides some surprising answers.</p>
+              
+              <h3>The Research Says...</h3>
+              <p>A comprehensive 2024 meta-analysis examining home-based versus gym-based training found that <strong>equipment availability matters less than training consistency and progression</strong>. When volume and intensity are matched, both environments can produce similar results for:</p>
+              <ul>
+                <li>Muscle hypertrophy</li>
+                <li>Strength gains</li>
+                <li>Cardiovascular improvements</li>
+                <li>Body composition changes</li>
+              </ul>
+              
+              <h3>Home Workout Advantages</h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <h4>✅ Convenience</h4>
+                  <ul>
+                    <li>No commute time</li>
+                    <li>Train anytime</li>
+                    <li>No gym hours restrictions</li>
+                    <li>Privacy and comfort</li>
+                  </ul>
+                  
+                  <h4>✅ Cost-Effective</h4>
+                  <ul>
+                    <li>No monthly membership fees</li>
+                    <li>One-time equipment investment</li>
+                    <li>No gas/transport costs</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h4>✅ Consistency</h4>
+                  <ul>
+                    <li>Fewer barriers to exercise</li>
+                    <li>Weather independent</li>
+                    <li>Family-friendly</li>
+                    <li>Multitasking opportunities</li>
+                  </ul>
+                  
+                  <h4>✅ Customization</h4>
+                  <ul>
+                    <li>Control environment</li>
+                    <li>Choose your music</li>
+                    <li>Set your pace</li>
+                    <li>No equipment waiting</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <h3>Gym Advantages</h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <h4>🏋️ Equipment Variety</h4>
+                  <ul>
+                    <li>Specialized machines</li>
+                    <li>Heavy free weights</li>
+                    <li>Cardio equipment</li>
+                    <li>Latest technology</li>
+                  </ul>
+                  
+                  <h4>🏋️ Professional Support</h4>
+                  <ul>
+                    <li>Personal trainers</li>
+                    <li>Technique guidance</li>
+                    <li>Safety spotting</li>
+                    <li>Program design help</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h4>🏋️ Social Environment</h4>
+                  <ul>
+                    <li>Community motivation</li>
+                    <li>Group classes</li>
+                    <li>Training partners</li>
+                    <li>Competitive atmosphere</li>
+                  </ul>
+                  
+                  <h4>🏋️ Mental Separation</h4>
+                  <ul>
+                    <li>Dedicated workout space</li>
+                    <li>Fewer distractions</li>
+                    <li>Focus mindset</li>
+                    <li>Routine establishment</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <h3>Effective Home Workout Equipment</h3>
+              <p>Research shows these tools can provide gym-level results:</p>
+              
+              <h4>Essential (Under $200):</h4>
+              <ul>
+                <li><strong>Resistance bands:</strong> Variable resistance, full-body training</li>
+                <li><strong>Dumbbells (adjustable):</strong> Progressive overload capability</li>
+                <li><strong>Pull-up bar:</strong> Upper body strength development</li>
+                <li><strong>Yoga mat:</strong> Floor exercises and stretching</li>
+              </ul>
+              
+              <h4>Advanced ($200-$500):</h4>
+              <ul>
+                <li><strong>Kettlebells:</strong> Dynamic strength and cardio</li>
+                <li><strong>Suspension trainer:</strong> Bodyweight exercise enhancement</li>
+                <li><strong>Bench:</strong> Exercise variety expansion</li>
+                <li><strong>Medicine ball:</strong> Power and core training</li>
+              </ul>
+              
+              <h3>Bodyweight Exercise Effectiveness</h3>
+              <p>Studies demonstrate that bodyweight exercises can be as effective as weighted exercises when:</p>
+              <ul>
+                <li>Volume is progressively increased</li>
+                <li>Exercise difficulty is advanced</li>
+                <li>Time under tension is manipulated</li>
+                <li>Rest periods are optimized</li>
+              </ul>
+              
+              <div class="alert alert-info">
+                <h4>Bodyweight Progression Examples:</h4>
+                <ul>
+                  <li>Push-ups → One-arm push-ups</li>
+                  <li>Squats → Pistol squats</li>
+                  <li>Planks → Single-arm planks</li>
+                  <li>Lunges → Jumping lunges</li>
+                </ul>
+              </div>
+              
+              <h3>The Verdict</h3>
+              <p>Both home and gym workouts can be highly effective. The best choice depends on:</p>
+              <ul>
+                <li><strong>Your goals:</strong> General fitness vs. powerlifting</li>
+                <li><strong>Your preferences:</strong> Social vs. private</li>
+                <li><strong>Your schedule:</strong> Flexible vs. structured</li>
+                <li><strong>Your experience:</strong> Self-directed vs. guided</li>
+              </ul>
+              
+              <h3>Success Factors (Regardless of Location)</h3>
+              <ol>
+                <li><strong>Consistency:</strong> Regular training beats perfect equipment</li>
+                <li><strong>Progressive overload:</strong> Gradually increase difficulty</li>
+                <li><strong>Proper form:</strong> Quality over quantity</li>
+                <li><strong>Adequate recovery:</strong> Rest and nutrition matter</li>
+                <li><strong>Long-term commitment:</strong> Patience with the process</li>
+              </ol>
+              
+              <p class="mt-4"><strong>Bottom line:</strong> The most effective workout is the one you'll actually do consistently. Whether that's at home or in a gym, both can deliver excellent results when approached intelligently.</p>
+            </div>
+          `
+        },
+        'Understanding Rep Ranges: Strength vs. Hypertrophy vs. Endurance': {
+          content: `
+            <div class="article-content">
+              <h2>Understanding Rep Ranges: Strength vs. Hypertrophy vs. Endurance</h2>
+              <p class="lead">One of the most debated topics in fitness: do different rep ranges really target different adaptations? Recent research has challenged traditional thinking and revealed some surprising truths.</p>
+              
+              <h3>The Traditional Model</h3>
+              <p>For decades, the fitness industry has promoted this "repetition continuum":</p>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="card border-danger">
+                    <div class="card-body text-center">
+                      <h4 class="text-danger">Strength</h4>
+                      <h3>1-5 Reps</h3>
+                      <p>85-100% 1RM</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card border-warning">
+                    <div class="card-body text-center">
+                      <h4 class="text-warning">Hypertrophy</h4>
+                      <h3>6-12 Reps</h3>
+                      <p>65-85% 1RM</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card border-success">
+                    <div class="card-body text-center">
+                      <h4 class="text-success">Endurance</h4>
+                      <h3>15+ Reps</h3>
+                      <p>&lt;65% 1RM</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <h3>What Modern Research Shows</h3>
+              <p>A 2023 comprehensive meta-analysis examining over 200 studies found that <strong>the boundaries between these ranges are far more flexible than previously thought</strong>.</p>
+              
+              <h4>Key Findings:</h4>
+              <ul>
+                <li><strong>Hypertrophy:</strong> Can occur effectively across 1-30+ reps when taken to or near failure</li>
+                <li><strong>Strength:</strong> Responds best to heavier loads (1-6 reps) but can improve with higher reps</li>
+                <li><strong>Endurance:</strong> Improves across all rep ranges with appropriate training</li>
+              </ul>
+              
+              <h3>The Science Behind Each Range</h3>
+              
+              <h4>Low Reps (1-5): Maximum Strength</h4>
+              <p><strong>Primary adaptations:</strong></p>
+              <ul>
+                <li>Neural efficiency improvements</li>
+                <li>Increased motor unit recruitment</li>
+                <li>Enhanced intermuscular coordination</li>
+                <li>Improved force production capability</li>
+              </ul>
+              
+              <p><strong>Best for:</strong> Powerlifters, strength athletes, breaking plateaus</p>
+              <p><strong>Research note:</strong> Heavy loads (≥85% 1RM) immediately recruit high-threshold motor units, making them essential for maximum strength development.</p>
+              
+              <h4>Moderate Reps (6-12): Hypertrophy Sweet Spot</h4>
+              <p><strong>Primary adaptations:</strong></p>
+              <ul>
+                <li>Optimal balance of mechanical tension and metabolic stress</li>
+                <li>Increased protein synthesis</li>
+                <li>Enhanced muscle fiber growth</li>
+                <li>Improved muscle endurance</li>
+              </ul>
+              
+              <p><strong>Best for:</strong> Bodybuilders, general fitness, muscle building</p>
+              <p><strong>Research note:</strong> This range provides the best "bang for your buck" for most people seeking muscle growth.</p>
+              
+              <h4>High Reps (15+): Muscular Endurance</h4>
+              <p><strong>Primary adaptations:</strong></p>
+              <ul>
+                <li>Increased mitochondrial density</li>
+                <li>Enhanced capillarization</li>
+                <li>Improved metabolic efficiency</li>
+                <li>Greater lactate tolerance</li>
+              </ul>
+              
+              <p><strong>Best for:</strong> Endurance athletes, fat loss, muscle endurance</p>
+              <p><strong>Research note:</strong> Can produce significant hypertrophy when taken to failure, especially in untrained individuals.</p>
+              
+              <h3>The Game-Changing Research</h3>
+              
+              <h4>Study 1: Load Doesn't Matter for Hypertrophy</h4>
+              <p>A landmark 2016 study by Morton et al. found that when sets are taken to failure, muscle growth was similar between:</p>
+              <ul>
+                <li>30-50% 1RM (20-25 reps)</li>
+                <li>75-90% 1RM (8-12 reps)</li>
+              </ul>
+              
+              <h4>Study 2: Fiber Type Recruitment</h4>
+              <p>Research using muscle biopsies showed that when exercises are performed to failure, all muscle fiber types are recruited regardless of the load used. This explains why different rep ranges can all build muscle effectively.</p>
+              
+              <h3>Practical Applications</h3>
+              
+              <h4>For Strength Goals:</h4>
+              <ul>
+                <li><strong>Primary focus:</strong> 1-5 reps at 85-100% 1RM</li>
+                <li><strong>Frequency:</strong> 2-3 times per week per movement</li>
+                <li><strong>Rest periods:</strong> 3-5 minutes</li>
+                <li><strong>Volume:</strong> 10-25 total reps per exercise per session</li>
+              </ul>
+              
+              <h4>For Hypertrophy Goals:</h4>
+              <ul>
+                <li><strong>Primary focus:</strong> 6-12 reps, but include variety</li>
+                <li><strong>Volume:</strong> 10-20 sets per muscle group per week</li>
+                <li><strong>Rest periods:</strong> 60-120 seconds</li>
+                <li><strong>Key factor:</strong> Training to or near muscle failure</li>
+              </ul>
+              
+              <h4>For Endurance Goals:</h4>
+              <ul>
+                <li><strong>Primary focus:</strong> 15-30+ reps</li>
+                <li><strong>Rest periods:</strong> 30-60 seconds</li>
+                <li><strong>Volume:</strong> Higher total training volume</li>
+                <li><strong>Progression:</strong> Increase reps before adding weight</li>
+              </ul>
+              
+              <h3>The Importance of Training to Failure</h3>
+              <p>Recent research emphasizes that <strong>training to or near muscular failure</strong> is more important than the specific rep range for muscle growth. This is because:</p>
+              <ul>
+                <li>It ensures maximum motor unit recruitment</li>
+                <li>It provides sufficient stimulus for adaptation</li>
+                <li>It guarantees progressive overload</li>
+              </ul>
+              
+              <div class="alert alert-warning">
+                <h4>The "Effective Reps" Concept</h4>
+                <p>Only the last few challenging reps of a set (typically the last 5) provide the primary stimulus for muscle growth. This is true regardless of whether you're doing 5 reps at 85% or 20 reps at 65%.</p>
+              </div>
+              
+              <h3>Programming Recommendations</h3>
+              
+              <h4>Beginner Approach:</h4>
+              <ul>
+                <li>Focus primarily on 8-12 rep range</li>
+                <li>Learn proper form and movement patterns</li>
+                <li>Build base level of strength and muscle</li>
+              </ul>
+              
+              <h4>Intermediate/Advanced Approach:</h4>
+              <ul>
+                <li>Use periodization with multiple rep ranges</li>
+                <li>Heavy days (3-6 reps) for strength</li>
+                <li>Moderate days (8-12 reps) for hypertrophy</li>
+                <li>Light days (15-20 reps) for endurance and recovery</li>
+              </ul>
+              
+              <h3>Common Mistakes to Avoid</h3>
+              <ul>
+                <li><strong>Rep range dogma:</strong> Thinking you can ONLY build muscle with 8-12 reps</li>
+                <li><strong>Avoiding failure:</strong> Not training hard enough to stimulate adaptation</li>
+                <li><strong>Ignoring periodization:</strong> Staying in one rep range forever</li>
+                <li><strong>Volume neglect:</strong> Not doing enough total work</li>
+              </ul>
+              
+              <h3>The Bottom Line</h3>
+              <p>While traditional rep ranges provide useful guidelines, they're not rigid rules. The most important factors for success are:</p>
+              <ol>
+                <li><strong>Consistency:</strong> Regular training over time</li>
+                <li><strong>Progressive overload:</strong> Gradually increasing demands</li>
+                <li><strong>Effort:</strong> Training to or near failure</li>
+                <li><strong>Volume:</strong> Sufficient total work</li>
+                <li><strong>Recovery:</strong> Adequate rest and nutrition</li>
+              </ol>
+              
+              <p>Use different rep ranges as tools in your toolbox, not as rigid prescriptions. Variety in training stimuli can lead to better long-term progress and help prevent plateaus.</p>
+            </div>
+          `
+        },
+        '5 Essential Compound Movements for Beginners': {
+          content: `
+            <div class="article-content">
+              <h2>5 Essential Compound Movements for Beginners</h2>
+              <p class="lead">Master these five foundational exercises to build a strong, functional physique. These compound movements work multiple muscle groups simultaneously and form the backbone of any effective training program.</p>
+              
+              <h3>Why Compound Movements?</h3>
+              <p>Research consistently shows that compound exercises provide superior muscle activation, hormonal response, and functional strength compared to isolation exercises. They're time-efficient and translate better to real-world activities.</p>
+              
+              <div class="row mt-4">
+                <div class="col-md-6">
+                  <h3>1. The Squat</h3>
+                  <p><strong>Primary muscles:</strong> Quadriceps, glutes, hamstrings, core</p>
+                  <p><strong>Why it matters:</strong> Often called the "king of exercises," squats develop lower body power and core stability essential for daily activities.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Bodyweight squats</li>
+                    <li>Goblet squats</li>
+                    <li>Front squats</li>
+                    <li>Back squats</li>
+                  </ul>
+                  
+                  <h4>Key Technique Points:</h4>
+                  <ul>
+                    <li>Feet shoulder-width apart</li>
+                    <li>Chest up, core braced</li>
+                    <li>Knees track over toes</li>
+                    <li>Hip hinge movement pattern</li>
+                  </ul>
+                </div>
+                
+                <div class="col-md-6">
+                  <h3>2. The Deadlift</h3>
+                  <p><strong>Primary muscles:</strong> Hamstrings, glutes, erector spinae, traps, lats</p>
+                  <p><strong>Why it matters:</strong> Builds total-body strength and teaches proper lifting mechanics for daily activities.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Romanian deadlifts</li>
+                    <li>Trap bar deadlifts</li>
+                    <li>Conventional deadlifts</li>
+                    <li>Sumo deadlifts</li>
+                  </ul>
+                  
+                  <h4>Key Technique Points:</h4>
+                  <ul>
+                    <li>Neutral spine throughout</li>
+                    <li>Bar close to body</li>
+                    <li>Hip hinge movement</li>
+                    <li>Engage lats and core</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-6">
+                  <h3>3. The Push-Up/Bench Press</h3>
+                  <p><strong>Primary muscles:</strong> Chest, shoulders, triceps, core</p>
+                  <p><strong>Why it matters:</strong> Develops upper body pushing strength and shoulder stability.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Wall push-ups</li>
+                    <li>Incline push-ups</li>
+                    <li>Standard push-ups</li>
+                    <li>Bench press variations</li>
+                  </ul>
+                </div>
+                
+                <div class="col-md-6">
+                  <h3>4. The Pull-Up/Row</h3>
+                  <p><strong>Primary muscles:</strong> Lats, rhomboids, rear delts, biceps</p>
+                  <p><strong>Why it matters:</strong> Balances pushing movements and improves posture.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Assisted pull-ups</li>
+                    <li>Negative pull-ups</li>
+                    <li>Band-assisted pull-ups</li>
+                    <li>Full pull-ups</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <h3>5. The Overhead Press</h3>
+                  <p><strong>Primary muscles:</strong> Shoulders, triceps, upper chest, core</p>
+                  <p><strong>Why it matters:</strong> Develops functional shoulder strength and stability crucial for overhead activities.</p>
+                  
+                  <h4>Progression:</h4>
+                  <ul>
+                    <li>Seated dumbbell press</li>
+                    <li>Standing dumbbell press</li>
+                    <li>Military press</li>
+                    <li>Push press</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <h3>Programming These Movements</h3>
+              <div class="alert alert-success">
+                <h4>Beginner Template:</h4>
+                <ul>
+                  <li><strong>Frequency:</strong> 2-3 times per week</li>
+                  <li><strong>Sets:</strong> 3-4 sets per exercise</li>
+                  <li><strong>Reps:</strong> 8-12 repetitions</li>
+                  <li><strong>Rest:</strong> 60-90 seconds between sets</li>
+                </ul>
+              </div>
+              
+              <h3>Safety First</h3>
+              <p>Always prioritize proper form over weight lifted. Start with bodyweight or light weights and focus on movement quality. Consider working with a qualified trainer when learning these movements.</p>
+            </div>
+          `
+        },
+        'Home vs. Gym Workouts: Maximizing Results Anywhere': {
+          content: `
+            <div class="article-content">
+              <h2>Home vs. Gym Workouts: Maximizing Results Anywhere</h2>
+              <p class="lead">The age-old debate: can you achieve the same results training at home as you can in a fully equipped gym? Recent research provides some surprising answers.</p>
+              
+              <h3>The Research Says...</h3>
+              <p>A comprehensive 2024 meta-analysis examining home-based versus gym-based training found that <strong>equipment availability matters less than training consistency and progression</strong>. When volume and intensity are matched, both environments can produce similar results for:</p>
+              <ul>
+                <li>Muscle hypertrophy</li>
+                <li>Strength gains</li>
+                <li>Cardiovascular improvements</li>
+                <li>Body composition changes</li>
+              </ul>
+              
+              <h3>Home Workout Advantages</h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <h4>✅ Convenience</h4>
+                  <ul>
+                    <li>No commute time</li>
+                    <li>Train anytime</li>
+                    <li>No gym hours restrictions</li>
+                    <li>Privacy and comfort</li>
+                  </ul>
+                  
+                  <h4>✅ Cost-Effective</h4>
+                  <ul>
+                    <li>No monthly membership fees</li>
+                    <li>One-time equipment investment</li>
+                    <li>No gas/transport costs</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h4>✅ Consistency</h4>
+                  <ul>
+                    <li>Fewer barriers to exercise</li>
+                    <li>Weather independent</li>
+                    <li>Family-friendly</li>
+                    <li>Multitasking opportunities</li>
+                  </ul>
+                  
+                  <h4>✅ Customization</h4>
+                  <ul>
+                    <li>Control environment</li>
+                    <li>Choose your music</li>
+                    <li>Set your pace</li>
+                    <li>No equipment waiting</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <h3>Gym Advantages</h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <h4>🏋️ Equipment Variety</h4>
+                  <ul>
+                    <li>Specialized machines</li>
+                    <li>Heavy free weights</li>
+                    <li>Cardio equipment</li>
+                    <li>Latest technology</li>
+                  </ul>
+                  
+                  <h4>🏋️ Professional Support</h4>
+                  <ul>
+                    <li>Personal trainers</li>
+                    <li>Technique guidance</li>
+                    <li>Safety spotting</li>
+                    <li>Program design help</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h4>🏋️ Social Environment</h4>
+                  <ul>
+                    <li>Community motivation</li>
+                    <li>Group classes</li>
+                    <li>Training partners</li>
+                    <li>Competitive atmosphere</li>
+                  </ul>
+                  
+                  <h4>🏋️ Mental Separation</h4>
+                  <ul>
+                    <li>Dedicated workout space</li>
+                    <li>Fewer distractions</li>
+                    <li>Focus mindset</li>
+                    <li>Routine establishment</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <h3>Effective Home Workout Equipment</h3>
+              <p>Research shows these tools can provide gym-level results:</p>
+              
+              <h4>Essential (Under $200):</h4>
+              <ul>
+                <li><strong>Resistance bands:</strong> Variable resistance, full-body training</li>
+                <li><strong>Dumbbells (adjustable):</strong> Progressive overload capability</li>
+                <li><strong>Pull-up bar:</strong> Upper body strength development</li>
+                <li><strong>Yoga mat:</strong> Floor exercises and stretching</li>
+              </ul>
+              
+              <h4>Advanced ($200-$500):</h4>
+              <ul>
+                <li><strong>Kettlebells:</strong> Dynamic strength and cardio</li>
+                <li><strong>Suspension trainer:</strong> Bodyweight exercise enhancement</li>
+                <li><strong>Bench:</strong> Exercise variety expansion</li>
+                <li><strong>Medicine ball:</strong> Power and core training</li>
+              </ul>
+              
+              <h3>Bodyweight Exercise Effectiveness</h3>
+              <p>Studies demonstrate that bodyweight exercises can be as effective as weighted exercises when:</p>
+              <ul>
+                <li>Volume is progressively increased</li>
+                <li>Exercise difficulty is advanced</li>
+                <li>Time under tension is manipulated</li>
+                <li>Rest periods are optimized</li>
+              </ul>
+              
+              <div class="alert alert-info">
+                <h4>Bodyweight Progression Examples:</h4>
+                <ul>
+                  <li>Push-ups → One-arm push-ups</li>
+                  <li>Squats → Pistol squats</li>
+                  <li>Planks → Single-arm planks</li>
+                  <li>Lunges → Jumping lunges</li>
+                </ul>
+              </div>
+              
+              <h3>The Verdict</h3>
+              <p>Both home and gym workouts can be highly effective. The best choice depends on:</p>
+              <ul>
+                <li><strong>Your goals:</strong> General fitness vs. powerlifting</li>
+                <li><strong>Your preferences:</strong> Social vs. private</li>
+                <li><strong>Your schedule:</strong> Flexible vs. structured</li>
+                <li><strong>Your experience:</strong> Self-directed vs. guided</li>
+              </ul>
+              
+              <h3>Success Factors (Regardless of Location)</h3>
+              <ol>
+                <li><strong>Consistency:</strong> Regular training beats perfect equipment</li>
+                <li><strong>Progressive overload:</strong> Gradually increase difficulty</li>
+                <li><strong>Proper form:</strong> Quality over quantity</li>
+                <li><strong>Adequate recovery:</strong> Rest and nutrition matter</li>
+                <li><strong>Long-term commitment:</strong> Patience with the process</li>
+              </ol>
+              
+              <p class="mt-4"><strong>Bottom line:</strong> The most effective workout is the one you'll actually do consistently. Whether that's at home or in a gym, both can deliver excellent results when approached intelligently.</p>
+            </div>
+          `
+        },
+        'Perfect Your Deadlift: Form Breakdown': {
+          content: `
+            <div class="article-content">
+              <h2>Perfect Your Deadlift: Form Breakdown</h2>
+              <p class="lead">The deadlift is one of the most powerful exercises in your arsenal, but improper form can lead to injury and decreased performance. Master these techniques to unlock your true deadlift potential.</p>
+              
+              <h3>The Three Pillars of Perfect Deadlift Setup</h3>
+              <p>According to leading biomechanics experts, proper deadlift technique revolves around three fundamental pillars:</p>
+              
+              <h4>1. Bar Position: Mid-Foot Alignment</h4>
+              <p>The bar should be positioned directly over your mid-foot. This ensures the bar travels in a straight path from floor to lockout. If the bar is too far forward, you'll need to pull it back toward your body during the lift, which wastes energy and compromises form.</p>
+              
+              <h4>2. Bar Contact: Connected to Your Body</h4>
+              <p>The bar should be touching your shins at the start position. Many people mistakenly set up with the bar several inches from their body, but this creates horizontal displacement and makes the lift less efficient.</p>
+              
+              <h4>3. Shoulder Position: Posterior Deltoid Over Bar</h4>
+              <p>Position your posterior deltoid (rear shoulder) directly over the bar. This is more precise than the common cue "shoulders over bar" and creates the proper vertical arm position essential for maximum force production.</p>
+              
+              <h3>The Setup Sequence</h3>
+              
+              <h4>Step 1: Foot Position</h4>
+              <ul>
+                <li>Feet hip-width apart</li>
+                <li>Toes pointed slightly forward</li>
+                <li>Bar over mid-foot</li>
+              </ul>
+              
+              <h4>Step 2: Grip and Hand Position</h4>
+              <ul>
+                <li>Double overhand grip for lighter weights</li>
+                <li>Mixed grip (one over, one under) for heavier loads</li>
+                <li>Hook grip for Olympic lifting variations</li>
+                <li>Hands just outside your legs</li>
+              </ul>
+              
+              <h4>Step 3: Hip Hinge and Spine Alignment</h4>
+              <ul>
+                <li>Push hips back first</li>
+                <li>Maintain neutral spine (avoid excessive arching)</li>
+                <li>Chest up, but not excessively so</li>
+                <li>Engage your lats by "protecting your armpits"</li>
+              </ul>
+              
+              <h3>The Lift Execution</h3>
+              
+              <h4>Phase 1: Floor to Knee (The "Squat" Phase)</h4>
+              <p>From the floor to knee level, think of this as a squat movement. Your chest and hips should rise at the same rate. Key points:</p>
+              <ul>
+                <li>Drive through your heels</li>
+                <li>Keep the bar close to your body</li>
+                <li>Maintain the three setup pillars</li>
+                <li>Don't let your hips shoot up first</li>
+              </ul>
+              
+              <h4>Phase 2: Knee to Lockout (The "Hip Drive" Phase)</h4>
+              <p>From knee to standing, this becomes a hip hinge movement similar to an RDL. Focus on:</p>
+              <ul>
+                <li>Driving your hips forward</li>
+                <li>Squeezing your glutes at the top</li>
+                <li>Standing tall with chest proud</li>
+                <li>Avoiding leaning back at lockout</li>
+              </ul>
+              
+              <h3>Common Deadlift Mistakes and Fixes</h3>
+              
+              <h4>Mistake 1: Bar Drifts Away From Body</h4>
+              <p><strong>Fix:</strong> Focus on keeping the bar in contact with your legs throughout the entire movement. Practice with lighter weights first.</p>
+              
+              <h4>Mistake 2: Hips Rise Too Quickly</h4>
+              <p><strong>Fix:</strong> Think "chest and hips rise together" during the first half of the lift. This often indicates weak quads.</p>
+              
+              <h4>Mistake 3: Rounded Back</h4>
+              <p><strong>Fix:</strong> Reduce the weight and focus on maintaining a neutral spine. Strengthen your core and practice proper hip hinge patterns.</p>
+              
+              <h4>Mistake 4: Looking Up</h4>
+              <p><strong>Fix:</strong> Keep your neck neutral. Look ahead, not up. Your head position affects your entire spine.</p>
+              
+              <h4>Mistake 5: Not Engaging Lats</h4>
+              <p><strong>Fix:</strong> Before lifting, imagine "protecting your armpits" or "squeezing oranges in your armpits." This engages your lats and creates upper body stability.</p>
+              
+              <h3>Deadlift Variations and When to Use Them</h3>
+              
+              <h4>Conventional Deadlift</h4>
+              <ul>
+                <li><strong>Best for:</strong> General strength, posterior chain development</li>
+                <li><strong>Stance:</strong> Hip-width apart</li>
+                <li><strong>Hand position:</strong> Outside the legs</li>
+              </ul>
+              
+              <h4>Sumo Deadlift</h4>
+              <ul>
+                <li><strong>Best for:</strong> Those with longer limbs, hip mobility emphasis</li>
+                <li><strong>Stance:</strong> Wide, toes pointed out</li>
+                <li><strong>Hand position:</strong> Inside the legs</li>
+              </ul>
+              
+              <h4>Trap Bar Deadlift</h4>
+              <ul>
+                <li><strong>Best for:</strong> Beginners, knee-dominant lifters</li>
+                <li><strong>Advantages:</strong> More upright torso, easier to learn</li>
+                <li><strong>Research shows:</strong> Higher power output and less spinal stress</li>
+              </ul>
+              
+              <h3>Programming Your Deadlifts</h3>
+              
+              <h4>Beginner Program (2-3x per week):</h4>
+              <ul>
+                <li>Focus on technique with light weight</li>
+                <li>3-4 sets of 5-8 repetitions</li>
+                <li>Rest 2-3 minutes between sets</li>
+              </ul>
+              
+              <h4>Intermediate Program (1-2x per week):</h4>
+              <ul>
+                <li>Mix of intensity ranges</li>
+                <li>Heavy: 3-5 sets of 1-5 reps</li>
+                <li>Moderate: 3-4 sets of 6-8 reps</li>
+                <li>Light technique work: 2-3 sets of 8-12 reps</li>
+              </ul>
+              
+              <h4>Advanced Program (1x per week heavy):</h4>
+              <ul>
+                <li>Periodized approach with waves</li>
+                <li>Competition prep or max strength focus</li>
+                <li>Include assistance exercises</li>
+              </ul>
+              
+              <h3>The Controlled Eccentric</h3>
+              <p>Don't just drop the bar! The lowering phase (eccentric) provides additional strength and muscle-building benefits. Lower the bar by:</p>
+              <ul>
+                <li>Reversing the lifting pattern</li>
+                <li>Hip hinge to knee level</li>
+                <li>Then squat pattern to the floor</li>
+                <li>Control the descent for 2-3 seconds</li>
+              </ul>
+              
+              <h3>Recovery and Injury Prevention</h3>
+              
+              <h4>Warm-Up Protocol:</h4>
+              <ol>
+                <li>5-10 minutes light cardio</li>
+                <li>Dynamic stretching (leg swings, hip circles)</li>
+                <li>Bodyweight squats and hip hinges</li>
+                <li>Gradual load progression with the bar</li>
+              </ol>
+              
+              <h4>Signs to Stop and Assess:</h4>
+              <ul>
+                <li>Lower back pain or discomfort</li>
+                <li>Form breakdown under load</li>
+                <li>Extreme fatigue affecting technique</li>
+                <li>Sharp pain anywhere in the body</li>
+              </ul>
+              
+              <h3>Final Thoughts</h3>
+              <p>The deadlift is a skill that takes time to master. Focus on perfect technique with lighter weights before progressing to heavier loads. Remember: it's not just about moving weight from point A to point B—it's about how you move it.</p>
+              
+              <p>Consider working with a qualified coach when first learning the deadlift. Video analysis from multiple angles can help identify form issues you might not feel. Master the basics, stay consistent, and the strength gains will follow.</p>
+            </div>
+          `
+        },
+        'Common Squat Mistakes and How to Fix Them': {
+          content: `
+            <div class="article-content">
+              <h2>Common Squat Mistakes and How to Fix Them</h2>
+              <p class="lead">The squat is fundamental to human movement, but even experienced lifters struggle with common form issues. Learn to identify and fix these mistakes to squat safer and stronger.</p>
+              
+              <h3>Why Squat Form Matters</h3>
+              <p>Poor squat form doesn't just limit your performance—it can lead to injury and long-term joint problems. The squat requires coordination between multiple joints and muscle groups, making it particularly susceptible to form breakdown under fatigue or improper load progression.</p>
+              
+              <h3>The 7 Most Common Squat Mistakes</h3>
+              
+              <h4>1. Knee Valgus (Knees Caving In)</h4>
+              
+              <p><strong>What it looks like:</strong> Knees collapse inward toward each other during the descent or ascent.</p>
+              
+              <p><strong>Why it happens:</strong></p>
+              <ul>
+                <li>Weak gluteus medius and maximus</li>
+                <li>Limited ankle mobility</li>
+                <li>Poor motor control and muscle activation</li>
+                <li>Overactive adductors (inner thigh muscles)</li>
+              </ul>
+              
+              <p><strong>How to fix it:</strong></p>
+              <ul>
+                <li><strong>Strengthen glutes:</strong> Lateral walks, clamshells, single-leg glute bridges</li>
+                <li><strong>Improve ankle mobility:</strong> Calf stretches, wall ankle mobilizations</li>
+                <li><strong>Practice proper tracking:</strong> Use a resistance band around knees during bodyweight squats</li>
+                <li><strong>Visual cue:</strong> "Push your knees out over your toes"</li>
+              </ul>
+              
+              <h4>2. Butt Wink (Excessive Lower Back Rounding)</h4>
+              
+              <p><strong>What it looks like:</strong> The tailbone tucks under and lower back rounds at the bottom of the squat.</p>
+              
+              <p><strong>Why it happens:</strong></p>
+              <ul>
+                <li>Limited hip mobility</li>
+                <li>Tight hamstrings and calves</li>
+                <li>Weak core muscles</li>
+                <li>Anatomical limitations</li>
+              </ul>
+              
+              <p><strong>How to fix it:</strong></p>
+              <ul>
+                <li><strong>Don't force depth:</strong> Squat only as deep as you can maintain neutral spine</li>
+                <li><strong>Improve hip mobility:</strong> 90/90 stretches, deep squats holds</li>
+                <li><strong>Strengthen core:</strong> Planks, dead bugs, bird dogs</li>
+                <li><strong>Consider individual anatomy:</strong> Some people may never achieve full depth</li>
+              </ul>
+              
+              <h4>3. Forward Lean (Losing Torso Position)</h4>
+              
+              <p><strong>What it looks like:</strong> Chest drops and torso leans too far forward during the squat.</p>
+              
+              <p><strong>Why it happens:</strong></p>
+              <ul>
+                <li>Weak quads relative to posterior chain</li>
+                <li>Tight hip flexors</li>
+                <li>Poor bar position</li>
+                <li>Limited ankle mobility</li>
+              </ul>
+              
+              <p><strong>How to fix it:</strong></p>
+              <ul>
+                <li><strong>Strengthen quads:</strong> Front squats, Bulgarian split squats, leg extensions</li>
+                <li><strong>Stretch hip flexors:</strong> Couch stretch, kneeling hip flexor stretch</li>
+                <li><strong>Practice goblet squats:</strong> Forces more upright torso position</li>
+                <li><strong>Consider high bar or front squat variations</strong></li>
+              </ul>
+              
+              <h4>4. Heels Rising Off the Ground</h4>
+              
+              <p><strong>What it looks like:</strong> Heels lift up during the descent, weight shifts to toes.</p>
+              
+              <p><strong>Why it happens:</strong></p>
+              <ul>
+                <li>Limited ankle dorsiflexion</li>
+                <li>Tight calves and Achilles tendon</li>
+                <li>Poor weight distribution awareness</li>
+              </ul>
+              
+              <p><strong>How to fix it:</strong></p>
+              <ul>
+                <li><strong>Improve ankle mobility:</strong> Daily calf stretches, wall slides</li>
+                <li><strong>Temporary fix:</strong> Small plates under heels while working on mobility</li>
+                <li><strong>Focus on weight distribution:</strong> Feel pressure through whole foot</li>
+                <li><strong>Consider squat shoes:</strong> Raised heel can help with mobility limitations</li>
+              </ul>
+              
+              <h4>5. Shallow Depth (Not Squatting Deep Enough)</h4>
+              
+              <p><strong>What it looks like:</strong> Hip crease doesn't reach knee level, partial range of motion.</p>
+              
+              <p><strong>Why it happens:</strong></p>
+              <ul>
+                <li>Fear of injury or falling backward</li>
+                <li>Mobility restrictions</li>
+                <li>Weak stabilizer muscles</li>
+                <li>Ego lifting (too much weight)</li>
+              </ul>
+              
+              <p><strong>How to fix it:</strong></p>
+              <ul>
+                <li><strong>Use a box or bench:</strong> Sit back to a target depth</li>
+                <li><strong>Reduce weight:</strong> Focus on full range of motion</li>
+                <li><strong>Bodyweight practice:</strong> Daily deep squat holds</li>
+                <li><strong>Address mobility issues:</strong> Work on specific limitations</li>
+              </ul>
+              
+              <h4>6. Weight Distribution Issues</h4>
+              
+              <p><strong>What it looks like:</strong> Weight shifts to toes, heels, or one side during the movement.</p>
+              
+              <p><strong>Why it happens:</strong></p>
+              <ul>
+                <li>Poor proprioception (body awareness)</li>
+                <li>Muscle imbalances</li>
+                <li>Previous injuries</li>
+                <li>Rushing the movement</li>
+              </ul>
+              
+              <p><strong>How to fix it:</strong></p>
+              <ul>
+                <li><strong>Practice barefoot:</strong> Better ground connection and feedback</li>
+                <li><strong>Slow down the movement:</strong> Focus on control and balance</li>
+                <li><strong>Single-leg work:</strong> Address imbalances with unilateral exercises</li>
+                <li><strong>Use a mirror:</strong> Visual feedback for symmetry</li>
+              </ul>
+              
+              <h4>7. Breath Holding and Core Issues</h4>
+              
+              <p><strong>What it looks like:</strong> Holding breath throughout entire set, or losing core tension.</p>
+              
+              <p><strong>Why it happens:</strong></p>
+              <ul>
+                <li>Poor breathing mechanics</li>
+                <li>Weak core muscles</li>
+                <li>Anxiety or fear</li>
+                <li>Lack of bracing knowledge</li>
+              </ul>
+              
+              <p><strong>How to fix it:</strong></p>
+              <ul>
+                <li><strong>Learn proper bracing:</strong> 360-degree core expansion</li>
+                <li><strong>Breath at the top:</strong> Breathe in, brace, descend, ascend, exhale</li>
+                <li><strong>Core strengthening:</strong> Planks, dead bugs, pallof presses</li>
+                <li><strong>Practice breathing drills:</strong> Diaphragmatic breathing exercises</li>
+              </ul>
+              
+              <h3>The Assessment Process</h3>
+              
+              <h4>Self-Assessment Tools:</h4>
+              <ol>
+                <li><strong>Video yourself:</strong> Record from front and side angles</li>
+                <li><strong>Bodyweight first:</strong> Master movement before adding load</li>
+                <li><strong>Wall squat test:</strong> Face wall, toes 6 inches away, squat without touching</li>
+                <li><strong>Overhead squat:</strong> Reveals mobility and stability limitations</li>
+              </ol>
+              
+              <h3>Progressive Squat Development</h3>
+              
+              <h4>Phase 1: Movement Quality (Weeks 1-4)</h4>
+              <ul>
+                <li>Bodyweight squats with focus on form</li>
+                <li>Box squats for depth reference</li>
+                <li>Goblet squats for posture</li>
+                <li>Daily mobility work</li>
+              </ul>
+              
+              <h4>Phase 2: Load Introduction (Weeks 5-8)</h4>
+              <ul>
+                <li>Add light weights while maintaining form</li>
+                <li>Introduce barbell with just the bar</li>
+                <li>Continue corrective exercises</li>
+                <li>Focus on consistent depth and speed</li>
+              </ul>
+              
+              <h4>Phase 3: Strength Building (Weeks 9+)</h4>
+              <ul>
+                <li>Progressive overload with proper form</li>
+                <li>Vary rep ranges and intensities</li>
+                <li>Regular form check-ins</li>
+                <li>Address issues as they arise</li>
+              </ul>
+              
+              <h3>When to Seek Help</h3>
+              
+              <p>Consider working with a qualified trainer if you:</p>
+              <ul>
+                <li>Experience pain during or after squatting</li>
+                <li>Can't identify your form issues</li>
+                <li>Have previous injuries affecting movement</li>
+                <li>Want to compete in powerlifting or weightlifting</li>
+                <li>Feel stuck in your progress despite consistent training</li>
+              </ul>
+              
+              <h3>Key Takeaways</h3>
+              
+              <ul>
+                <li><strong>Form before load:</strong> Master the movement pattern before adding weight</li>
+                <li><strong>Individual differences:</strong> Not everyone will squat the same way</li>
+                <li><strong>Patience is key:</strong> Fixing form issues takes time and consistency</li>
+                <li><strong>Address root causes:</strong> Don't just treat symptoms</li>
+                <li><strong>Stay consistent:</strong> Regular practice of corrective exercises is essential</li>
+              </ul>
+              
+              <p>Remember, the "perfect" squat looks different for everyone based on individual anatomy, mobility, and goals. Focus on moving well within your capabilities and gradually expanding those capabilities over time.</p>
+            </div>
+          `
+        },
+        'Understanding Upper Body Pull Patterns: Rows vs Pull-ups': {
+          content: `
+            <div class="article-content">
+              <h2>Understanding Upper Body Pull Patterns: Rows vs Pull-ups</h2>
+              <p class="lead">When it comes to building a strong, balanced upper body, understanding the nuances between different pull patterns is crucial for maximizing your training effectiveness. Today, we'll dive deep into the fundamental differences between horizontal pulling (rows) and vertical pulling (pull-ups), exploring how each movement targets your muscles differently and how to incorporate both into your routine.</p>
+              
+              <h3>The Science Behind Pull Patterns</h3>
+              <p>Research from the <em>Journal of Strength and Conditioning Research</em> demonstrates that muscle activation patterns vary significantly between horizontal and vertical pull exercises. While both movements target the latissimus dorsi, rhomboids, and rear deltoids, the degree of activation and biomechanical demands differ substantially.</p>
+              
+              <h3>Horizontal Pulling: The Foundation of Posture</h3>
+              <p>Rowing movements primarily target:</p>
+              <ul>
+                <li><strong>Middle and lower trapezius:</strong> Essential for scapular stability and posture correction</li>
+                <li><strong>Rhomboids:</strong> Critical for retracting the shoulder blades</li>
+                <li><strong>Posterior deltoids:</strong> Often underdeveloped in modern sedentary lifestyles</li>
+                <li><strong>Latissimus dorsi (lower fibers):</strong> Provides width and V-taper development</li>
+              </ul>
+              
+              <p>Studies show that seated cable rows activate the middle trapezius up to 40% more than pull-ups, making them superior for addressing forward head posture and rounded shoulders common in desk workers.</p>
+              
+              <h3>Vertical Pulling: Building Functional Strength</h3>
+              <p>Pull-ups and chin-ups excel at targeting:</p>
+              <ul>
+                <li><strong>Latissimus dorsi (upper fibers):</strong> Creates the coveted V-shaped torso</li>
+                <li><strong>Biceps brachii:</strong> Particularly during chin-ups with supinated grip</li>
+                <li><strong>Lower trapezius:</strong> Provides scapular depression and stability</li>
+                <li><strong>Core musculature:</strong> Engages stabilizers throughout the movement</li>
+              </ul>
+              
+              <h3>Programming for Optimal Results</h3>
+              <p>Research suggests a 2:1 ratio of horizontal to vertical pulling for most individuals, especially those spending significant time in seated positions. A sample weekly structure might include:</p>
+              
+              <ul>
+                <li><strong>Monday:</strong> Barbell rows (4 sets of 6-8 reps)</li>
+                <li><strong>Wednesday:</strong> Pull-ups/Assisted pull-ups (3 sets of 5-12 reps)</li>
+                <li><strong>Friday:</strong> Cable rows + Face pulls (3 sets each)</li>
+              </ul>
+              
+              <h3>Common Mistakes to Avoid</h3>
+              <p>EMG studies reveal that many trainees make critical errors that reduce exercise effectiveness:</p>
+              <ul>
+                <li><strong>Incomplete range of motion:</strong> Failing to achieve full scapular retraction in rows</li>
+                <li><strong>Momentum usage:</strong> Swinging during pull-ups reduces target muscle activation</li>
+                <li><strong>Forward head position:</strong> Compromises cervical spine and reduces middle trap activation</li>
+              </ul>
+              
+              <h3>The Bottom Line</h3>
+              <p>Both horizontal and vertical pull patterns are essential for developing a balanced, strong upper body. Current research supports incorporating both movement patterns with slight emphasis on horizontal pulling for most recreational athletes. Focus on progressive overload, proper form, and consistency to maximize the benefits of your pull training.</p>
+              
+              <p><em>Remember to consult with a qualified fitness professional before making significant changes to your training program, especially if you have any existing injuries or limitations.</em></p>
+            </div>
+          `
+        },
+        'Pre and Post-Workout Nutrition: Timing Your Fuel for Maximum Results': {
+          content: `
+            <div class="article-content">
+              <h2>Pre and Post-Workout Nutrition: Timing Your Fuel for Maximum Results</h2>
+              <p class="lead">Proper nutrition timing can be the difference between mediocre and exceptional training results. Recent research in sports nutrition has refined our understanding of when and what to eat around workouts to optimize performance, recovery, and adaptation.</p>
+              
+              <h3>The Science of Nutrient Timing</h3>
+              <p>The International Society of Sports Nutrition emphasizes that nutrient timing, while not as crucial as total daily intake, can provide a competitive edge for serious athletes. The key lies in understanding how your body's metabolic demands change before, during, and after exercise.</p>
+              
+              <h3>Pre-Workout Nutrition: Fueling Performance</h3>
+              <p><strong>Timing:</strong> 2-4 hours before training for a full meal, 30-60 minutes for a snack</p>
+              
+              <p><strong>Key Components:</strong></p>
+              <ul>
+                <li><strong>Carbohydrates (1-4g per kg body weight):</strong> Provide readily available energy and spare muscle glycogen</li>
+                <li><strong>Moderate protein (0.25g per kg body weight):</strong> Begins muscle protein synthesis and provides amino acids</li>
+                <li><strong>Minimal fat and fiber:</strong> Reduces digestive stress during training</li>
+                <li><strong>Adequate hydration:</strong> 500-600ml of fluid 2-3 hours prior</li>
+              </ul>
+              
+              <p><strong>Ideal Pre-Workout Meals:</strong></p>
+              <ul>
+                <li>Oatmeal with banana and honey (2-3 hours prior)</li>
+                <li>Greek yogurt with berries (1-2 hours prior)</li>
+                <li>Banana with almond butter (30-60 minutes prior)</li>
+              </ul>
+              
+              <h3>During Workout: Sustaining Energy</h3>
+              <p>For sessions lasting longer than 60-90 minutes, research supports consuming 30-60g of carbohydrates per hour. This becomes critical for:</p>
+              <ul>
+                <li>Endurance training sessions</li>
+                <li>High-intensity interval workouts</li>
+                <li>Multiple training sessions per day</li>
+              </ul>
+              
+              <h3>Post-Workout Nutrition: The Recovery Window</h3>
+              <p>Contrary to the "30-minute anabolic window" myth, research shows the post-workout period extends 3-6 hours, with meal timing flexibility for most individuals.</p>
+              
+              <p><strong>The "4 R's" of Recovery:</strong></p>
+              <ol>
+                <li><strong>Replenish:</strong> Glycogen stores with 1.2-1.5g carbs per kg body weight</li>
+                <li><strong>Repair:</strong> Muscle tissue with 20-40g high-quality protein</li>
+                <li><strong>Rehydrate:</strong> 150% of fluid losses (weigh yourself pre/post workout)</li>
+                <li><strong>Revitalize:</strong> With antioxidants and anti-inflammatory nutrients</li>
+              </ol>
+              
+              <h3>Optimal Post-Workout Combinations</h3>
+              <p>Research indicates a 3:1 or 4:1 carbohydrate to protein ratio optimizes both glycogen replenishment and muscle protein synthesis:</p>
+              
+              <ul>
+                <li><strong>Chocolate milk:</strong> Classic option with ideal carb:protein ratio</li>
+                <li><strong>Turkey and sweet potato:</strong> Whole food option with complete amino acids</li>
+                <li><strong>Protein smoothie with fruit:</strong> Quick absorption and convenience</li>
+                <li><strong>Quinoa bowl with chicken:</strong> Complex carbs and lean protein</li>
+              </ul>
+              
+              <h3>Special Considerations</h3>
+              
+              <p><strong>Morning Workouts:</strong> If training fasted, prioritize post-workout nutrition within 2 hours to maximize adaptations.</p>
+              
+              <p><strong>Evening Workouts:</strong> Include tart cherry juice or foods rich in tryptophan to support sleep quality and recovery.</p>
+              
+              <p><strong>Fat Loss Goals:</strong> Maintain protein intake while moderating carbohydrates based on training intensity and goals.</p>
+              
+              <h3>Hydration Strategy</h3>
+              <p>Recent studies emphasize individualized hydration approaches:</p>
+              <ul>
+                <li><strong>Pre-exercise:</strong> Start well-hydrated (pale yellow urine)</li>
+                <li><strong>During exercise:</strong> Replace 75-80% of sweat losses</li>
+                <li><strong>Post-exercise:</strong> Consume 150% of fluid losses over 6 hours</li>
+              </ul>
+              
+              <h3>Practical Implementation</h3>
+              <p>Start by tracking your current habits for one week, then gradually implement these evidence-based strategies. Remember that individual responses vary, so experiment during training rather than competition.</p>
+              
+              <p>The key to successful nutrition timing is consistency and personalization. What works for elite athletes may need modification for your lifestyle, training schedule, and individual responses.</p>
+            </div>
+          `
+        },
+        'The Critical Role of Sleep in Muscle Recovery and Performance': {
+          content: `
+            <div class="article-content">
+              <h2>The Critical Role of Sleep in Muscle Recovery and Performance</h2>
+              <p class="lead">While nutrition and training often dominate fitness discussions, sleep represents the most underutilized recovery tool in an athlete's arsenal. Emerging research reveals that sleep quality and duration profoundly impact everything from muscle protein synthesis to hormonal balance, making it a non-negotiable component of any serious training program.</p>
+              
+              <h3>The Science of Sleep and Recovery</h3>
+              <p>During sleep, your body enters its most anabolic state. Growth hormone secretion peaks during deep sleep phases, reaching levels 10-20 times higher than during waking hours. This hormonal cascade triggers muscle repair, tissue regeneration, and metabolic recovery processes that simply cannot occur optimally without adequate sleep.</p>
+              
+              <h3>Sleep Stages and Athletic Recovery</h3>
+              
+              <p><strong>Deep Sleep (Stages 3-4):</strong></p>
+              <ul>
+                <li>Peak growth hormone release (70-80% of daily production)</li>
+                <li>Maximum muscle protein synthesis rates</li>
+                <li>Cellular repair and regeneration</li>
+                <li>Glycogen replenishment in brain and muscles</li>
+              </ul>
+              
+              <p><strong>REM Sleep:</strong></p>
+              <ul>
+                <li>Motor skill consolidation and muscle memory formation</li>
+                <li>Cognitive recovery and memory processing</li>
+                <li>Neurotransmitter balance restoration</li>
+                <li>Stress hormone regulation</li>
+              </ul>
+              
+              <h3>The Performance-Sleep Connection</h3>
+              
+              <p>Research from Stanford University demonstrated that basketball players who extended their sleep to 10+ hours per night for 5-7 weeks showed remarkable improvements:</p>
+              <ul>
+                <li><strong>9% increase</strong> in free-throw accuracy</li>
+                <li><strong>9.2% increase</strong> in three-point shooting accuracy</li>
+                <li><strong>0.6-second improvement</strong> in sprint times</li>
+                <li><strong>Significant improvements</strong> in mood and energy levels</li>
+              </ul>
+              
+              <h3>Hormonal Impact of Sleep Deprivation</h3>
+              
+              <p>Even one night of poor sleep (less than 6 hours) can significantly disrupt your hormonal environment:</p>
+              
+              <ul>
+                <li><strong>Testosterone:</strong> Decreases by 10-15% after one week of restricted sleep</li>
+                <li><strong>Growth Hormone:</strong> Reduces by up to 70% with chronic sleep restriction</li>
+                <li><strong>Cortisol:</strong> Remains elevated, promoting muscle breakdown and fat storage</li>
+                <li><strong>Insulin Sensitivity:</strong> Decreases by 20-25%, affecting nutrient partitioning</li>
+              </ul>
+              
+              <h3>Sleep Duration Recommendations</h3>
+              
+              <p>Current research suggests athletes require more sleep than the general population:</p>
+              <ul>
+                <li><strong>Recreational athletes:</strong> 7-9 hours per night</li>
+                <li><strong>Competitive athletes:</strong> 8-10 hours per night</li>
+                <li><strong>Elite athletes:</strong> 9-11 hours per night</li>
+                <li><strong>During intense training:</strong> Additional 1-2 hours may be beneficial</li>
+              </ul>
+              
+              <h3>Optimizing Sleep Quality</h3>
+              
+              <p><strong>Sleep Environment:</strong></p>
+              <ul>
+                <li><strong>Temperature:</strong> 65-68°F (18-20°C) for optimal deep sleep</li>
+                <li><strong>Darkness:</strong> Blackout curtains and eye masks to maximize melatonin production</li>
+                <li><strong>Quiet:</strong> Earplugs or white noise machines to minimize disruptions</li>
+                <li><strong>Comfortable mattress:</strong> Replace every 7-10 years for optimal support</li>
+              </ul>
+              
+              <p><strong>Pre-Sleep Routine (60-90 minutes before bed):</strong></p>
+              <ul>
+                <li>Dim lights to trigger natural melatonin production</li>
+                <li>Avoid screens or use blue light filtering glasses</li>
+                <li>Practice relaxation techniques (meditation, gentle stretching)</li>
+                <li>Keep a consistent bedtime, even on weekends</li>
+              </ul>
+              
+              <h3>Nutrition and Sleep Synergy</h3>
+              
+              <p><strong>Sleep-Promoting Foods:</strong></p>
+              <ul>
+                <li><strong>Tart cherry juice:</strong> Natural source of melatonin</li>
+                <li><strong>Turkey, eggs, cheese:</strong> Rich in tryptophan</li>
+                <li><strong>Almonds, walnuts:</strong> Contain melatonin and magnesium</li>
+                <li><strong>Kiwi fruit:</strong> Studies show improved sleep onset and quality</li>
+              </ul>
+              
+              <p><strong>Timing Considerations:</strong></p>
+              <ul>
+                <li>Stop eating 2-3 hours before bedtime</li>
+                <li>Limit caffeine after 2 PM (6-8 hour half-life)</li>
+                <li>Avoid alcohol close to bedtime (disrupts REM sleep)</li>
+                <li>Consider casein protein before bed for overnight muscle protein synthesis</li>
+              </ul>
+              
+              <h3>The Bottom Line</h3>
+              
+              <p>Sleep isn't just rest—it's when your body rebuilds itself stronger. Treating sleep with the same seriousness as your training and nutrition will unlock new levels of performance, recovery, and long-term health. Start by establishing a consistent sleep schedule and gradually implement these evidence-based strategies to optimize your recovery window.</p>
+              
+              <p>Remember: you can't out-train poor sleep habits. Make sleep your competitive advantage.</p>
+            </div>
+          `
+        },
+        'Hydration Science: How Water Impacts Your Workout Performance': {
+          content: `
+            <div class="article-content">
+              <h2>Hydration Science: How Water Impacts Your Workout Performance</h2>
+              <p class="lead">Water makes up 55-65% of your body weight and plays a crucial role in virtually every physiological process. Yet hydration remains one of the most misunderstood aspects of athletic performance. Let's dive into the latest research on how hydration status affects your workouts and what you can do to optimize your fluid intake strategy.</p>
+              
+              <h3>The Physiology of Hydration and Performance</h3>
+              
+              <p>Even mild dehydration—as little as 2% body weight loss—can significantly impact your performance. Research shows that this level of fluid loss can result in:</p>
+              <ul>
+                <li><strong>10-15% decrease</strong> in muscular strength and power</li>
+                <li><strong>20-30% reduction</strong> in aerobic endurance capacity</li>
+                <li><strong>Elevated core temperature</strong> and increased perception of effort</li>
+                <li><strong>Impaired cognitive function</strong> and decision-making abilities</li>
+              </ul>
+              
+              <h3>How Dehydration Affects Your Body Systems</h3>
+              
+              <p><strong>Cardiovascular System:</strong></p>
+              <ul>
+                <li>Reduced blood volume leads to decreased stroke volume</li>
+                <li>Heart rate increases to maintain cardiac output</li>
+                <li>Blood pressure regulation becomes compromised</li>
+                <li>Oxygen delivery to working muscles decreases</li>
+              </ul>
+              
+              <p><strong>Thermoregulatory System:</strong></p>
+              <ul>
+                <li>Reduced sweating capacity impairs cooling</li>
+                <li>Core temperature rises more rapidly during exercise</li>
+                <li>Heat illness risk increases significantly</li>
+                <li>Recovery from heat stress is prolonged</li>
+              </ul>
+              
+              <p><strong>Metabolic System:</strong></p>
+              <ul>
+                <li>Increased reliance on muscle glycogen for energy</li>
+                <li>Impaired nutrient transport to working muscles</li>
+                <li>Reduced efficiency of cellular processes</li>
+                <li>Compromised waste product removal</li>
+              </ul>
+              
+              <h3>The Science of Sweat Rates</h3>
+              
+              <p>Individual sweat rates vary dramatically—from 0.5 to 3.0 liters per hour depending on:</p>
+              <ul>
+                <li><strong>Body size and composition:</strong> Larger individuals typically sweat more</li>
+                <li><strong>Fitness level:</strong> Trained athletes sweat more efficiently</li>
+                <li><strong>Heat acclimatization:</strong> Adaptations increase sweat rate but reduce sodium loss</li>
+                <li><strong>Exercise intensity:</strong> Higher intensities produce exponentially more sweat</li>
+                <li><strong>Environmental conditions:</strong> Temperature, humidity, and air movement</li>
+                <li><strong>Genetics:</strong> Some people are simply "heavy sweaters"</li>
+              </ul>
+              
+              <h3>Evidence-Based Hydration Strategies</h3>
+              
+              <p><strong>Pre-Exercise Hydration:</strong></p>
+              <ul>
+                <li>Begin exercise well-hydrated (urine color pale yellow)</li>
+                <li>Drink 500-600ml of fluid 2-3 hours before exercise</li>
+                <li>Add 200-300ml more 10-20 minutes before starting</li>
+                <li>Include sodium (300-700mg) for longer sessions</li>
+              </ul>
+              
+              <p><strong>During Exercise Hydration:</strong></p>
+              <ul>
+                <li>Aim to replace 75-80% of sweat losses during exercise</li>
+                <li>Drink 150-250ml every 15-20 minutes</li>
+                <li>For sessions > 60 minutes, include 30-60g carbohydrates per hour</li>
+                <li>Include 300-500mg sodium per liter for sessions > 90 minutes</li>
+              </ul>
+              
+              <p><strong>Post-Exercise Rehydration:</strong></p>
+              <ul>
+                <li>Drink 150% of fluid losses over 4-6 hours</li>
+                <li>Include sodium to enhance fluid retention</li>
+                <li>Monitor urine color (should be pale yellow within 4-6 hours)</li>
+                <li>Avoid alcohol, which impairs rehydration</li>
+              </ul>
+              
+              <h3>Personalized Hydration: Beyond Plain Water</h3>
+              
+              <p>Recent research shows that personalized hydration strategies significantly outperform generic recommendations. Key factors include:</p>
+              
+              <p><strong>Electrolyte Balance:</strong></p>
+              <ul>
+                <li><strong>Sodium:</strong> 300-700mg per liter (higher for salty sweaters)</li>
+                <li><strong>Potassium:</strong> 150-300mg per liter for muscle function</li>
+                <li><strong>Magnesium:</strong> 50-100mg per liter for longer sessions</li>
+              </ul>
+              
+              <h3>Common Hydration Mistakes</h3>
+              
+              <ul>
+                <li><strong>Overhydrating:</strong> Can lead to hyponatremia (low blood sodium)</li>
+                <li><strong>Relying solely on thirst:</strong> Thirst lags behind actual fluid needs</li>
+                <li><strong>Ignoring individual differences:</strong> One size doesn't fit all</li>
+                <li><strong>Drinking only water:</strong> Missing critical electrolytes for longer sessions</li>
+                <li><strong>Poor pre-hydration:</strong> Starting exercise already behind on fluids</li>
+              </ul>
+              
+              <h3>Practical Implementation</h3>
+              
+              <p>Start by determining your individual sweat rate in various conditions. Then develop personalized hydration protocols for different training scenarios. Remember that optimal hydration is about maintaining performance while avoiding both dehydration and overhydration.</p>
+              
+              <p>The key is consistency—develop habits that ensure you start every workout optimally hydrated and maintain that status throughout your training session. Your performance will thank you for it.</p>
+            </div>
+          `
+        },
+        // Add articles with exact titles from blog cards
+        'Upper Body Pull Patterns: Rows vs. Pull-ups': {
+          content: `
+            <div class="article-content">
+              <h2>Upper Body Pull Patterns: Rows vs. Pull-ups</h2>
+              <p class="lead">When it comes to building a strong, balanced upper body, understanding the nuances between different pull patterns is crucial for maximizing your training effectiveness. Today, we'll dive deep into the fundamental differences between horizontal pulling (rows) and vertical pulling (pull-ups).</p>
+              
+              <h3>The Science Behind Pull Patterns</h3>
+              <p>Research from the <em>Journal of Strength and Conditioning Research</em> demonstrates that muscle activation patterns vary significantly between horizontal and vertical pull exercises. While both movements target the latissimus dorsi, rhomboids, and rear deltoids, the degree of activation and biomechanical demands differ substantially.</p>
+              
+              <h3>Horizontal Pulling: The Foundation of Posture</h3>
+              <p>Rowing movements primarily target:</p>
+              <ul>
+                <li><strong>Middle and lower trapezius:</strong> Essential for scapular stability and posture correction</li>
+                <li><strong>Rhomboids:</strong> Critical for retracting the shoulder blades</li>
+                <li><strong>Posterior deltoids:</strong> Often underdeveloped in modern sedentary lifestyles</li>
+                <li><strong>Latissimus dorsi (lower fibers):</strong> Provides width and V-taper development</li>
+              </ul>
+              
+              <p>Studies show that seated cable rows activate the middle trapezius up to 40% more than pull-ups, making them superior for addressing forward head posture and rounded shoulders common in desk workers.</p>
+              
+              <h3>Vertical Pulling: Building Functional Strength</h3>
+              <p>Pull-ups and chin-ups excel at targeting:</p>
+              <ul>
+                <li><strong>Latissimus dorsi (upper fibers):</strong> Creates the coveted V-shaped torso</li>
+                <li><strong>Biceps brachii:</strong> Particularly during chin-ups with supinated grip</li>
+                <li><strong>Lower trapezius:</strong> Provides scapular depression and stability</li>
+                <li><strong>Core musculature:</strong> Engages stabilizers throughout the movement</li>
+              </ul>
+              
+              <h3>Programming for Optimal Results</h3>
+              <p>Research suggests a 2:1 ratio of horizontal to vertical pulling for most individuals, especially those spending significant time in seated positions. A sample weekly structure might include:</p>
+              
+              <ul>
+                <li><strong>Monday:</strong> Barbell rows (4 sets of 6-8 reps)</li>
+                <li><strong>Wednesday:</strong> Pull-ups/Assisted pull-ups (3 sets of 5-12 reps)</li>
+                <li><strong>Friday:</strong> Cable rows + Face pulls (3 sets each)</li>
+              </ul>
+              
+              <h3>Common Mistakes to Avoid</h3>
+              <p>EMG studies reveal that many trainees make critical errors that reduce exercise effectiveness:</p>
+              <ul>
+                <li><strong>Incomplete range of motion:</strong> Failing to achieve full scapular retraction in rows</li>
+                <li><strong>Momentum usage:</strong> Swinging during pull-ups reduces target muscle activation</li>
+                <li><strong>Forward head position:</strong> Compromises cervical spine and reduces middle trap activation</li>
+              </ul>
+              
+              <h3>The Bottom Line</h3>
+              <p>Both horizontal and vertical pull patterns are essential for developing a balanced, strong upper body. Current research supports incorporating both movement patterns with slight emphasis on horizontal pulling for most recreational athletes. Focus on progressive overload, proper form, and consistency to maximize the benefits of your pull training.</p>
+            </div>
+          `
+        },
+        'Pre and Post-Workout Nutrition Guide': {
+          content: `
+            <div class="article-content">
+              <h2>Pre and Post-Workout Nutrition Guide</h2>
+              <p class="lead">Proper nutrition timing can be the difference between mediocre and exceptional training results. Recent research in sports nutrition has refined our understanding of when and what to eat around workouts to optimize performance, recovery, and adaptation.</p>
+              
+              <h3>The Science of Nutrient Timing</h3>
+              <p>The International Society of Sports Nutrition emphasizes that nutrient timing, while not as crucial as total daily intake, can provide a competitive edge for serious athletes. The key lies in understanding how your body's metabolic demands change before, during, and after exercise.</p>
+              
+              <h3>Pre-Workout Nutrition: Fueling Performance</h3>
+              <p><strong>Timing:</strong> 2-4 hours before training for a full meal, 30-60 minutes for a snack</p>
+              
+              <p><strong>Key Components:</strong></p>
+              <ul>
+                <li><strong>Carbohydrates (1-4g per kg body weight):</strong> Provide readily available energy and spare muscle glycogen</li>
+                <li><strong>Moderate protein (0.25g per kg body weight):</strong> Begins muscle protein synthesis and provides amino acids</li>
+                <li><strong>Minimal fat and fiber:</strong> Reduces digestive stress during training</li>
+                <li><strong>Adequate hydration:</strong> 500-600ml of fluid 2-3 hours prior</li>
+              </ul>
+              
+              <p><strong>Ideal Pre-Workout Meals:</strong></p>
+              <ul>
+                <li>Oatmeal with banana and honey (2-3 hours prior)</li>
+                <li>Greek yogurt with berries (1-2 hours prior)</li>
+                <li>Banana with almond butter (30-60 minutes prior)</li>
+              </ul>
+              
+              <h3>Post-Workout Nutrition: The Recovery Window</h3>
+              <p>Contrary to the "30-minute anabolic window" myth, research shows the post-workout period extends 3-6 hours, with meal timing flexibility for most individuals.</p>
+              
+              <p><strong>The "4 R's" of Recovery:</strong></p>
+              <ol>
+                <li><strong>Replenish:</strong> Glycogen stores with 1.2-1.5g carbs per kg body weight</li>
+                <li><strong>Repair:</strong> Muscle tissue with 20-40g high-quality protein</li>
+                <li><strong>Rehydrate:</strong> 150% of fluid losses (weigh yourself pre/post workout)</li>
+                <li><strong>Revitalize:</strong> With antioxidants and anti-inflammatory nutrients</li>
+              </ol>
+              
+              <h3>Optimal Post-Workout Combinations</h3>
+              <p>Research indicates a 3:1 or 4:1 carbohydrate to protein ratio optimizes both glycogen replenishment and muscle protein synthesis:</p>
+              
+              <ul>
+                <li><strong>Chocolate milk:</strong> Classic option with ideal carb:protein ratio</li>
+                <li><strong>Turkey and sweet potato:</strong> Whole food option with complete amino acids</li>
+                <li><strong>Protein smoothie with fruit:</strong> Quick absorption and convenience</li>
+                <li><strong>Quinoa bowl with chicken:</strong> Complex carbs and lean protein</li>
+              </ul>
+              
+              <h3>Special Considerations</h3>
+              
+              <p><strong>Morning Workouts:</strong> If training fasted, prioritize post-workout nutrition within 2 hours to maximize adaptations.</p>
+              
+              <p><strong>Evening Workouts:</strong> Include tart cherry juice or foods rich in tryptophan to support sleep quality and recovery.</p>
+              
+              <p><strong>Fat Loss Goals:</strong> Maintain protein intake while moderating carbohydrates based on training intensity and goals.</p>
+              
+              <h3>Practical Implementation</h3>
+              <p>Start by tracking your current habits for one week, then gradually implement these evidence-based strategies. Remember that individual responses vary, so experiment during training rather than competition.</p>
+              
+              <p>The key to successful nutrition timing is consistency and personalization. What works for elite athletes may need modification for your lifestyle, training schedule, and individual responses.</p>
+            </div>
+          `
+        },
+        'The Importance of Sleep for Muscle Recovery': {
+          content: `
+            <div class="article-content">
+              <h2>The Importance of Sleep for Muscle Recovery</h2>
+              <p class="lead">While nutrition and training often dominate fitness discussions, sleep represents the most underutilized recovery tool in an athlete's arsenal. Emerging research reveals that sleep quality and duration profoundly impact everything from muscle protein synthesis to hormonal balance.</p>
+              
+              <h3>The Science of Sleep and Recovery</h3>
+              <p>During sleep, your body enters its most anabolic state. Growth hormone secretion peaks during deep sleep phases, reaching levels 10-20 times higher than during waking hours. This hormonal cascade triggers muscle repair, tissue regeneration, and metabolic recovery processes that simply cannot occur optimally without adequate sleep.</p>
+              
+              <h3>Sleep Stages and Athletic Recovery</h3>
+              
+              <p><strong>Deep Sleep (Stages 3-4):</strong></p>
+              <ul>
+                <li>Peak growth hormone release (70-80% of daily production)</li>
+                <li>Maximum muscle protein synthesis rates</li>
+                <li>Cellular repair and regeneration</li>
+                <li>Glycogen replenishment in brain and muscles</li>
+              </ul>
+              
+              <p><strong>REM Sleep:</strong></p>
+              <ul>
+                <li>Motor skill consolidation and muscle memory formation</li>
+                <li>Cognitive recovery and memory processing</li>
+                <li>Neurotransmitter balance restoration</li>
+                <li>Stress hormone regulation</li>
+              </ul>
+              
+              <h3>The Performance-Sleep Connection</h3>
+              
+              <p>Research from Stanford University demonstrated that basketball players who extended their sleep to 10+ hours per night for 5-7 weeks showed remarkable improvements:</p>
+              <ul>
+                <li><strong>9% increase</strong> in free-throw accuracy</li>
+                <li><strong>9.2% increase</strong> in three-point shooting accuracy</li>
+                <li><strong>0.6-second improvement</strong> in sprint times</li>
+                <li><strong>Significant improvements</strong> in mood and energy levels</li>
+              </ul>
+              
+              <h3>Hormonal Impact of Sleep Deprivation</h3>
+              
+              <p>Even one night of poor sleep (less than 6 hours) can significantly disrupt your hormonal environment:</p>
+              
+              <ul>
+                <li><strong>Testosterone:</strong> Decreases by 10-15% after one week of restricted sleep</li>
+                <li><strong>Growth Hormone:</strong> Reduces by up to 70% with chronic sleep restriction</li>
+                <li><strong>Cortisol:</strong> Remains elevated, promoting muscle breakdown and fat storage</li>
+                <li><strong>Insulin Sensitivity:</strong> Decreases by 20-25%, affecting nutrient partitioning</li>
+              </ul>
+              
+              <h3>Sleep Duration Recommendations</h3>
+              
+              <p>Current research suggests athletes require more sleep than the general population:</p>
+              <ul>
+                <li><strong>Recreational athletes:</strong> 7-9 hours per night</li>
+                <li><strong>Competitive athletes:</strong> 8-10 hours per night</li>
+                <li><strong>Elite athletes:</strong> 9-11 hours per night</li>
+                <li><strong>During intense training:</strong> Additional 1-2 hours may be beneficial</li>
+              </ul>
+              
+              <h3>Optimizing Sleep Quality</h3>
+              
+              <p><strong>Sleep Environment:</strong></p>
+              <ul>
+                <li><strong>Temperature:</strong> 65-68°F (18-20°C) for optimal deep sleep</li>
+                <li><strong>Darkness:</strong> Blackout curtains and eye masks to maximize melatonin production</li>
+                <li><strong>Quiet:</strong> Earplugs or white noise machines to minimize disruptions</li>
+                <li><strong>Comfortable mattress:</strong> Replace every 7-10 years for optimal support</li>
+              </ul>
+              
+              <p><strong>Pre-Sleep Routine (60-90 minutes before bed):</strong></p>
+              <ul>
+                <li>Dim lights to trigger natural melatonin production</li>
+                <li>Avoid screens or use blue light filtering glasses</li>
+                <li>Practice relaxation techniques (meditation, gentle stretching)</li>
+                <li>Keep a consistent bedtime, even on weekends</li>
+              </ul>
+              
+              <h3>The Bottom Line</h3>
+              
+              <p>Sleep isn't just rest—it's when your body rebuilds itself stronger. Treating sleep with the same seriousness as your training and nutrition will unlock new levels of performance, recovery, and long-term health. Start by establishing a consistent sleep schedule and gradually implement these evidence-based strategies.</p>
+              
+              <p>Remember: you can't out-train poor sleep habits. Make sleep your competitive advantage.</p>
+            </div>
+          `
+        },
+        'Hydration: The Overlooked Performance Factor': {
+          content: `
+            <div class="article-content">
+              <h2>Hydration: The Overlooked Performance Factor</h2>
+              <p class="lead">Water makes up 55-65% of your body weight and plays a crucial role in virtually every physiological process. Yet hydration remains one of the most misunderstood aspects of athletic performance. Let's explore how proper hydration can dramatically improve your workout performance.</p>
+              
+              <h3>The Physiology of Hydration and Performance</h3>
+              
+              <p>Even mild dehydration—as little as 2% body weight loss—can significantly impact your performance. Research shows that this level of fluid loss can result in:</p>
+              <ul>
+                <li><strong>10-15% decrease</strong> in muscular strength and power</li>
+                <li><strong>20-30% reduction</strong> in aerobic endurance capacity</li>
+                <li><strong>Elevated core temperature</strong> and increased perception of effort</li>
+                <li><strong>Impaired cognitive function</strong> and decision-making abilities</li>
+              </ul>
+              
+              <h3>How Dehydration Affects Your Body</h3>
+              
+              <p><strong>Cardiovascular System:</strong> Reduced blood volume leads to decreased stroke volume, forcing your heart to work harder to maintain cardiac output.</p>
+              
+              <p><strong>Thermoregulatory System:</strong> Compromised sweating capacity impairs your body's cooling mechanisms, leading to faster overheating during exercise.</p>
+              
+              <p><strong>Metabolic System:</strong> Increased reliance on muscle glycogen for energy and impaired nutrient transport to working muscles.</p>
+              
+              <h3>Individual Sweat Rates</h3>
+              
+              <p>Sweat rates vary dramatically between individuals—from 0.5 to 3.0 liters per hour depending on:</p>
+              <ul>
+                <li><strong>Body size and composition:</strong> Larger individuals typically sweat more</li>
+                <li><strong>Fitness level:</strong> Trained athletes sweat more efficiently</li>
+                <li><strong>Heat acclimatization:</strong> Adaptations increase sweat rate but reduce sodium loss</li>
+                <li><strong>Exercise intensity:</strong> Higher intensities produce exponentially more sweat</li>
+                <li><strong>Environmental conditions:</strong> Temperature, humidity, and air movement</li>
+              </ul>
+              
+              <h3>Evidence-Based Hydration Strategies</h3>
+              
+              <p><strong>Pre-Exercise Hydration:</strong></p>
+              <ul>
+                <li>Begin exercise well-hydrated (urine color pale yellow)</li>
+                <li>Drink 500-600ml of fluid 2-3 hours before exercise</li>
+                <li>Add 200-300ml more 10-20 minutes before starting</li>
+                <li>Include sodium (300-700mg) for longer sessions</li>
+              </ul>
+              
+              <p><strong>During Exercise Hydration:</strong></p>
+              <ul>
+                <li>Aim to replace 75-80% of sweat losses during exercise</li>
+                <li>Drink 150-250ml every 15-20 minutes</li>
+                <li>For sessions > 60 minutes, include 30-60g carbohydrates per hour</li>
+                <li>Include electrolytes for sessions > 90 minutes</li>
+              </ul>
+              
+              <p><strong>Post-Exercise Rehydration:</strong></p>
+              <ul>
+                <li>Drink 150% of fluid losses over 4-6 hours</li>
+                <li>Include sodium to enhance fluid retention</li>
+                <li>Monitor urine color (should be pale yellow within 4-6 hours)</li>
+                <li>Avoid alcohol, which impairs rehydration</li>
+              </ul>
+              
+              <h3>Beyond Plain Water</h3>
+              
+              <p>For exercise lasting longer than 60 minutes, plain water isn't enough. Your hydration strategy should include:</p>
+              
+              <p><strong>Electrolyte Balance:</strong></p>
+              <ul>
+                <li><strong>Sodium:</strong> 300-700mg per liter (higher for heavy sweaters)</li>
+                <li><strong>Potassium:</strong> 150-300mg per liter for muscle function</li>
+                <li><strong>Magnesium:</strong> 50-100mg per liter for longer sessions</li>
+              </ul>
+              
+              <h3>Common Hydration Mistakes</h3>
+              
+              <ul>
+                <li><strong>Overhydrating:</strong> Can lead to dangerous hyponatremia (low blood sodium)</li>
+                <li><strong>Relying solely on thirst:</strong> Thirst lags behind actual fluid needs during exercise</li>
+                <li><strong>Ignoring individual differences:</strong> Using generic recommendations instead of personal needs</li>
+                <li><strong>Poor pre-hydration:</strong> Starting exercise already behind on fluids</li>
+              </ul>
+              
+              <h3>Practical Implementation</h3>
+              
+              <p>Start by determining your individual sweat rate in various conditions. Weigh yourself before and after exercise sessions to calculate fluid losses. Then develop personalized hydration protocols for different training scenarios.</p>
+              
+              <p>Remember that optimal hydration is about maintaining performance while avoiding both dehydration and overhydration. The key is consistency—develop habits that ensure you start every workout optimally hydrated and maintain that status throughout your training session.</p>
+            </div>
+          `
+        },
+        'Building Sustainable Fitness Habits': {
+          content: `
+            <div class="article-content">
+              <h2>Building Sustainable Fitness Habits</h2>
+              <p class="lead">Creating lasting change with proven habit-building strategies is the key to long-term fitness success. Research in behavioral psychology reveals that sustainable habits, not motivation alone, drive consistent results over time.</p>
+              
+              <h3>The Science of Habit Formation</h3>
+              <p>According to research from University College London, it takes an average of 66 days to form a new habit. However, this varies significantly based on the complexity of the behavior and individual factors. The key is understanding the habit loop: cue, routine, and reward.</p>
+              
+              <h3>The Habit Loop in Fitness</h3>
+              
+              <p><strong>Cue:</strong> Environmental or internal triggers that initiate the behavior</p>
+              <ul>
+                <li>Time-based: "Every morning at 6 AM"</li>
+                <li>Location-based: "When I see my workout clothes"</li>
+                <li>Event-based: "After I finish my morning coffee"</li>
+                <li>Emotional: "When I feel stressed"</li>
+              </ul>
+              
+              <p><strong>Routine:</strong> The actual behavior or workout</p>
+              <ul>
+                <li>Start small and specific</li>
+                <li>Focus on consistency over intensity</li>
+                <li>Make it as easy as possible initially</li>
+                <li>Gradually increase complexity</li>
+              </ul>
+              
+              <p><strong>Reward:</strong> The benefit that reinforces the behavior</p>
+              <ul>
+                <li>Immediate: Energy boost, mood improvement</li>
+                <li>Intermediate: Better sleep, increased strength</li>
+                <li>Long-term: Health improvements, confidence</li>
+                <li>External: Progress tracking, social recognition</li>
+              </ul>
+              
+              <h3>The 1% Rule</h3>
+              
+              <p>James Clear's research shows that improving by just 1% each day leads to 37x improvement over a year. In fitness terms:</p>
+              <ul>
+                <li><strong>Week 1:</strong> 10-minute walks</li>
+                <li><strong>Week 2:</strong> 12-minute walks</li>
+                <li><strong>Week 3:</strong> Add light bodyweight exercises</li>
+                <li><strong>Week 4:</strong> Introduce structured workouts</li>
+              </ul>
+              
+              <h3>Implementation Strategies</h3>
+              
+              <p><strong>Habit Stacking:</strong> Attach new habits to existing ones</p>
+              <ul>
+                <li>"After I brush my teeth, I will do 10 squats"</li>
+                <li>"After I park at work, I will take the stairs"</li>
+                <li>"After I eat lunch, I will walk for 10 minutes"</li>
+              </ul>
+              
+              <p><strong>Environment Design:</strong> Make good choices easier</p>
+              <ul>
+                <li>Lay out workout clothes the night before</li>
+                <li>Keep resistance bands visible</li>
+                <li>Remove barriers to exercise</li>
+                <li>Create visual reminders</li>
+              </ul>
+              
+              <p><strong>The Two-Minute Rule:</strong> Scale down to just two minutes</p>
+              <ul>
+                <li>"Run a marathon" becomes "Put on running shoes"</li>
+                <li>"Do a full workout" becomes "Do one push-up"</li>
+                <li>"Eat healthy all day" becomes "Eat one piece of fruit"</li>
+              </ul>
+              
+              <h3>Overcoming Common Obstacles</h3>
+              
+              <p><strong>All-or-Nothing Mentality:</strong></p>
+              <ul>
+                <li>Progress over perfection</li>
+                <li>Something is always better than nothing</li>
+                <li>Get back on track quickly after setbacks</li>
+                <li>Celebrate small wins</li>
+              </ul>
+              
+              <p><strong>Motivation Dependency:</strong></p>
+              <ul>
+                <li>Build systems, not goals</li>
+                <li>Focus on identity change: "I am someone who exercises"</li>
+                <li>Create non-negotiable minimums</li>
+                <li>Use implementation intentions: "If X, then Y"</li>
+              </ul>
+              
+              <p><strong>Time Constraints:</strong></p>
+              <ul>
+                <li>Schedule workouts like important meetings</li>
+                <li>Find pockets of time throughout the day</li>
+                <li>Use micro-workouts (5-10 minutes)</li>
+                <li>Combine exercise with other activities</li>
+              </ul>
+              
+              <h3>The Role of Social Support</h3>
+              
+              <p>Research consistently shows that social support increases adherence to fitness programs:</p>
+              <ul>
+                <li><strong>Accountability partners:</strong> Regular check-ins and shared goals</li>
+                <li><strong>Group fitness:</strong> Community motivation and consistency</li>
+                <li><strong>Family involvement:</strong> Creating a health-conscious household</li>
+                <li><strong>Professional guidance:</strong> Trainers, coaches, and health professionals</li>
+              </ul>
+              
+              <h3>Tracking and Measurement</h3>
+              
+              <p><strong>Process Metrics vs. Outcome Metrics:</strong></p>
+              <ul>
+                <li>Track behaviors, not just results</li>
+                <li>Count workout frequency, not just weight lost</li>
+                <li>Measure consistency streaks</li>
+                <li>Monitor energy levels and mood</li>
+              </ul>
+              
+              <h3>Building Your Personal System</h3>
+              
+              <ol>
+                <li><strong>Start with identity:</strong> Who do you want to become?</li>
+                <li><strong>Choose your cue:</strong> What will trigger your habit?</li>
+                <li><strong>Design your routine:</strong> What's the smallest version?</li>
+                <li><strong>Identify your reward:</strong> How will you celebrate?</li>
+                <li><strong>Track your progress:</strong> How will you measure success?</li>
+              </ol>
+              
+              <h3>The Long Game</h3>
+              
+              <p>Sustainable fitness isn't about finding the perfect workout or diet—it's about building a system of small, consistent behaviors that compound over time. Focus on becoming the type of person who prioritizes their health, and the results will follow naturally.</p>
+              
+              <p>Remember: You don't rise to the level of your goals; you fall to the level of your systems. Build systems that make healthy choices automatic, and fitness becomes not something you do, but something you are.</p>
+            </div>
+          `
+        },
+        'Overcoming Workout Plateaus': {
+          content: `
+            <div class="article-content">
+              <h2>Overcoming Workout Plateaus</h2>
+              <p class="lead">Breaking through training plateaus and continuing to make progress requires understanding why plateaus occur and implementing strategic changes to restart adaptation. Every athlete faces plateaus—the key is knowing how to navigate them effectively.</p>
+              
+              <h3>Understanding Training Plateaus</h3>
+              <p>A plateau occurs when your body adapts to your current training stimulus and no longer responds with further improvements. This is actually a sign that your training has been effective—your body has successfully adapted to the demands you've placed on it.</p>
+              
+              <h3>Types of Plateaus</h3>
+              
+              <p><strong>Strength Plateaus:</strong></p>
+              <ul>
+                <li>Unable to lift heavier weights</li>
+                <li>Stalled progress in main lifts</li>
+                <li>Decreased power output</li>
+                <li>Form breakdown under previous loads</li>
+              </ul>
+              
+              <p><strong>Hypertrophy Plateaus:</strong></p>
+              <ul>
+                <li>No visible muscle growth</li>
+                <li>Measurements remain static</li>
+                <li>Mirror shows no changes</li>
+                <li>Photos reveal no progress</li>
+              </ul>
+              
+              <p><strong>Performance Plateaus:</strong></p>
+              <ul>
+                <li>Endurance gains have stalled</li>
+                <li>No improvement in workout capacity</li>
+                <li>Recovery times haven't improved</li>
+                <li>Energy levels remain flat</li>
+              </ul>
+              
+              <h3>Common Causes of Plateaus</h3>
+              
+              <p><strong>Insufficient Progressive Overload:</strong></p>
+              <ul>
+                <li>Same weights, reps, and sets for too long</li>
+                <li>Lack of systematic progression</li>
+                <li>Fear of challenging current limits</li>
+                <li>Comfortable routine without variation</li>
+              </ul>
+              
+              <p><strong>Inadequate Recovery:</strong></p>
+              <ul>
+                <li>Insufficient sleep (less than 7-9 hours)</li>
+                <li>Poor nutrition timing and quality</li>
+                <li>Chronic stress and cortisol elevation</li>
+                <li>Overtraining without adequate rest</li>
+              </ul>
+              
+              <p><strong>Nutritional Deficiencies:</strong></p>
+              <ul>
+                <li>Insufficient protein for muscle repair</li>
+                <li>Inadequate total caloric intake</li>
+                <li>Poor micronutrient status</li>
+                <li>Dehydration affecting performance</li>
+              </ul>
+              
+              <h3>Strategies to Break Through Plateaus</h3>
+              
+              <p><strong>Progressive Overload Variations:</strong></p>
+              <ul>
+                <li><strong>Increase weight:</strong> Add 2.5-5lbs to compound movements</li>
+                <li><strong>Increase volume:</strong> Add sets, reps, or training frequency</li>
+                <li><strong>Increase density:</strong> Same work in less time</li>
+                <li><strong>Increase range of motion:</strong> Deeper squats, fuller extensions</li>
+                <li><strong>Increase time under tension:</strong> Slower eccentrics, pause reps</li>
+              </ul>
+              
+              <p><strong>Exercise Variation Strategies:</strong></p>
+              <ul>
+                <li><strong>Change grip/stance:</strong> Wide vs. narrow, overhand vs. underhand</li>
+                <li><strong>Alter movement patterns:</strong> Front squats vs. back squats</li>
+                <li><strong>Modify equipment:</strong> Dumbbells vs. barbells, bands vs. weights</li>
+                <li><strong>Adjust angles:</strong> Incline vs. flat vs. decline</li>
+              </ul>
+              
+              <p><strong>Periodization Approaches:</strong></p>
+              <ul>
+                <li><strong>Linear periodization:</strong> Gradual increase in intensity over time</li>
+                <li><strong>Undulating periodization:</strong> Vary intensity and volume within weeks</li>
+                <li><strong>Block periodization:</strong> Focus on specific adaptations for set periods</li>
+                <li><strong>Conjugate method:</strong> Train multiple qualities simultaneously</li>
+              </ul>
+              
+              <h3>The Deload Strategy</h3>
+              
+              <p>Sometimes moving forward requires taking a step back. A deload week involves:</p>
+              <ul>
+                <li><strong>Reduce volume by 40-60%</strong></li>
+                <li><strong>Reduce intensity by 10-20%</strong></li>
+                <li><strong>Focus on movement quality</strong></li>
+                <li><strong>Emphasize recovery modalities</strong></li>
+                <li><strong>Address weak points and mobility</strong></li>
+              </ul>
+              
+              <h3>Nutritional Reset Strategies</h3>
+              
+              <p><strong>Caloric Adjustment:</strong></p>
+              <ul>
+                <li>Increase calories by 200-300 if in deficit too long</li>
+                <li>Ensure adequate protein (0.8-1.2g per lb bodyweight)</li>
+                <li>Time carbohydrates around workouts</li>
+                <li>Don't fear dietary fats for hormone production</li>
+              </ul>
+              
+              <p><strong>Hydration and Micronutrients:</strong></p>
+              <ul>
+                <li>Assess and correct any vitamin/mineral deficiencies</li>
+                <li>Ensure adequate hydration (clear to pale yellow urine)</li>
+                <li>Consider timing of nutrient intake</li>
+                <li>Evaluate supplement stack effectiveness</li>
+              </ul>
+              
+              <h3>Recovery Optimization</h3>
+              
+              <p><strong>Sleep Quality Improvement:</strong></p>
+              <ul>
+                <li>Consistent sleep and wake times</li>
+                <li>7-9 hours of quality sleep nightly</li>
+                <li>Cool, dark, quiet sleep environment</li>
+                <li>Limit screen time 1-2 hours before bed</li>
+              </ul>
+              
+              <p><strong>Stress Management:</strong></p>
+              <ul>
+                <li>Practice meditation or mindfulness</li>
+                <li>Incorporate gentle movement on rest days</li>
+                <li>Address work and life stressors</li>
+                <li>Consider professional help if needed</li>
+              </ul>
+              
+              <h3>When to Seek Professional Help</h3>
+              
+              <p>Consider consulting professionals if:</p>
+              <ul>
+                <li>Plateaus persist despite systematic changes</li>
+                <li>You're experiencing signs of overtraining</li>
+                <li>Motivation and enjoyment have significantly decreased</li>
+                <li>You're dealing with persistent pain or injury</li>
+                <li>You want to compete or reach advanced performance levels</li>
+              </ul>
+              
+              <h3>The Plateau Mindset</h3>
+              
+              <p>Reframe plateaus as opportunities rather than obstacles:</p>
+              <ul>
+                <li><strong>Learning opportunities:</strong> Time to refine technique and address weaknesses</li>
+                <li><strong>Mental breaks:</strong> Reduce pressure and rediscover training enjoyment</li>
+                <li><strong>Health focus:</strong> Emphasize recovery and overall well-being</li>
+                <li><strong>Skill development:</strong> Learn new exercises and movement patterns</li>
+              </ul>
+              
+              <h3>Creating Your Plateau-Breaking Plan</h3>
+              
+              <ol>
+                <li><strong>Assess current status:</strong> What type of plateau are you experiencing?</li>
+                <li><strong>Identify likely causes:</strong> Recovery, nutrition, or training variables?</li>
+                <li><strong>Choose your strategy:</strong> Progressive overload, variation, or deload?</li>
+                <li><strong>Implement systematically:</strong> Change one variable at a time</li>
+                <li><strong>Monitor and adjust:</strong> Track progress and be willing to adapt</li>
+              </ol>
+              
+              <p>Remember: Plateaus are not permanent roadblocks but temporary rest stops on your fitness journey. With the right strategies and patience, you can break through any plateau and continue progressing toward your goals.</p>
+            </div>
+          `
+        },
+        'Setting SMART Fitness Goals': {
+          content: `
+            <div class="article-content">
+              <h2>Setting SMART Fitness Goals</h2>
+              <p class="lead">Learn to set goals that are specific, measurable, achievable, relevant, and time-bound. Effective goal setting is the foundation of successful fitness transformations and long-term behavior change.</p>
+              
+              <h3>The Psychology of Goal Setting</h3>
+              <p>Research in behavioral psychology shows that people who write down specific goals are 42% more likely to achieve them. The SMART framework, developed by George T. Doran in 1981, provides a proven structure for creating goals that drive real results.</p>
+              
+              <h3>Breaking Down SMART Goals</h3>
+              
+              <p><strong>S - Specific:</strong> Clear and well-defined</p>
+              <ul>
+                <li><strong>Vague:</strong> "I want to get in shape"</li>
+                <li><strong>Specific:</strong> "I want to lose 15 pounds of body fat while maintaining muscle mass"</li>
+                <li><strong>Better:</strong> "I want to reduce my body fat percentage from 25% to 20% through strength training and nutrition changes"</li>
+              </ul>
+              
+              <p><strong>M - Measurable:</strong> Quantifiable progress indicators</p>
+              <ul>
+                <li><strong>Body composition:</strong> Weight, body fat percentage, measurements</li>
+                <li><strong>Performance:</strong> Bench press 1RM, 5K run time, pull-ups completed</li>
+                <li><strong>Behavioral:</strong> Workouts per week, steps per day, vegetables servings</li>
+                <li><strong>Health markers:</strong> Blood pressure, resting heart rate, sleep quality</li>
+              </ul>
+              
+              <p><strong>A - Achievable:</strong> Realistic and attainable</p>
+              <ul>
+                <li>Consider your current fitness level and experience</li>
+                <li>Account for available time and resources</li>
+                <li>Set challenging but realistic targets</li>
+                <li>Break large goals into smaller milestones</li>
+              </ul>
+              
+              <p><strong>R - Relevant:</strong> Meaningful and important to you</p>
+              <ul>
+                <li>Aligns with your values and lifestyle</li>
+                <li>Connects to your deeper motivations</li>
+                <li>Fits within your current life circumstances</li>
+                <li>Supports your long-term health and happiness</li>
+              </ul>
+              
+              <p><strong>T - Time-bound:</strong> Has a clear deadline</p>
+              <ul>
+                <li>Creates urgency and prevents procrastination</li>
+                <li>Allows for progress tracking and adjustments</li>
+                <li>Provides accountability and motivation</li>
+                <li>Enables celebration of achievements</li>
+              </ul>
+              
+              <h3>SMART Goal Examples</h3>
+              
+              <p><strong>Strength Goal:</strong></p>
+              <ul>
+                <li><strong>Specific:</strong> Increase my deadlift 1-rep max</li>
+                <li><strong>Measurable:</strong> From 225 lbs to 275 lbs</li>
+                <li><strong>Achievable:</strong> 50-lb increase over 6 months (realistic progression)</li>
+                <li><strong>Relevant:</strong> Builds functional strength for daily activities</li>
+                <li><strong>Time-bound:</strong> By December 31st, 2024</li>
+              </ul>
+              
+              <p><strong>Endurance Goal:</strong></p>
+              <ul>
+                <li><strong>Specific:</strong> Complete a 10K run without walking</li>
+                <li><strong>Measurable:</strong> Finish time under 60 minutes</li>
+                <li><strong>Achievable:</strong> Currently running 5K in 35 minutes</li>
+                <li><strong>Relevant:</strong> Improves cardiovascular health and confidence</li>
+                <li><strong>Time-bound:</strong> In 12 weeks (specific race date)</li>
+              </ul>
+              
+              <p><strong>Body Composition Goal:</strong></p>
+              <ul>
+                <li><strong>Specific:</strong> Reduce body fat while maintaining muscle mass</li>
+                <li><strong>Measurable:</strong> From 30% to 25% body fat (DEXA scan)</li>
+                <li><strong>Achievable:</strong> 1% per month is sustainable</li>
+                <li><strong>Relevant:</strong> Improves health markers and confidence</li>
+                <li><strong>Time-bound:</strong> Within 5 months</li>
+              </ul>
+              
+              <h3>Goal-Setting Process</h3>
+              
+              <p><strong>Step 1: Assess Your Starting Point</strong></p>
+              <ul>
+                <li>Current fitness level and health status</li>
+                <li>Available time and resources</li>
+                <li>Previous experience and challenges</li>
+                <li>Support system and environment</li>
+              </ul>
+              
+              <p><strong>Step 2: Identify Your "Why"</strong></p>
+              <ul>
+                <li>What are your deeper motivations?</li>
+                <li>How will achieving this goal improve your life?</li>
+                <li>What happens if you don't achieve it?</li>
+                <li>Who else will benefit from your success?</li>
+              </ul>
+              
+              <p><strong>Step 3: Create Process Goals</strong></p>
+              <ul>
+                <li>Focus on behaviors you can control</li>
+                <li>Work out 4 times per week</li>
+                <li>Eat 5 servings of vegetables daily</li>
+                <li>Sleep 8 hours per night</li>
+              </ul>
+              
+              <p><strong>Step 4: Set Milestone Markers</strong></p>
+              <ul>
+                <li>Monthly check-ins and assessments</li>
+                <li>Quarterly goal reviews and adjustments</li>
+                <li>Weekly process metric tracking</li>
+                <li>Daily habit completion</li>
+              </ul>
+              
+              <h3>Common Goal-Setting Mistakes</h3>
+              
+              <p><strong>Too Many Goals at Once:</strong></p>
+              <ul>
+                <li>Focus on 1-3 primary goals maximum</li>
+                <li>Master one habit before adding another</li>
+                <li>Quality over quantity in goal pursuit</li>
+              </ul>
+              
+              <p><strong>Outcome-Only Focus:</strong></p>
+              <ul>
+                <li>Balance outcome goals with process goals</li>
+                <li>Track behaviors, not just results</li>
+                <li>Celebrate small wins along the way</li>
+              </ul>
+              
+              <p><strong>All-or-Nothing Mentality:</strong></p>
+              <ul>
+                <li>Build in flexibility and adaptability</li>
+                <li>Plan for setbacks and obstacles</li>
+                <li>Focus on progress, not perfection</li>
+              </ul>
+              
+              <h3>Staying Motivated and Accountable</h3>
+              
+              <p><strong>Visual Reminders:</strong></p>
+              <ul>
+                <li>Write goals where you'll see them daily</li>
+                <li>Create vision boards or progress photos</li>
+                <li>Use apps or journals for tracking</li>
+                <li>Set phone reminders for key behaviors</li>
+              </ul>
+              
+              <p><strong>Social Support:</strong></p>
+              <ul>
+                <li>Share goals with friends and family</li>
+                <li>Find an accountability partner</li>
+                <li>Join groups with similar goals</li>
+                <li>Consider hiring a coach or trainer</li>
+              </ul>
+              
+              <p><strong>Regular Review and Adjustment:</strong></p>
+              <ul>
+                <li>Weekly check-ins on process metrics</li>
+                <li>Monthly assessment of progress</li>
+                <li>Quarterly goal review and adjustment</li>
+                <li>Annual reflection and new goal setting</li>
+              </ul>
+              
+              <h3>Your Goal-Setting Action Plan</h3>
+              
+              <ol>
+                <li><strong>Choose your primary focus area</strong> (strength, endurance, body composition, health)</li>
+                <li><strong>Apply the SMART framework</strong> to create specific, measurable goals</li>
+                <li><strong>Identify the daily/weekly behaviors</strong> that will lead to success</li>
+                <li><strong>Create accountability systems</strong> for tracking and support</li>
+                <li><strong>Schedule regular reviews</strong> to assess progress and make adjustments</li>
+              </ol>
+              
+              <p>Remember: Goals are not destinations but rather directions that guide your daily actions. The real transformation happens not when you achieve the goal, but through the person you become in the process of pursuing it.</p>
+            </div>
+          `
+        }
+      };
+      
+      const article = articles[title];
+      if (article) {
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark text-light">
+              <div class="modal-header">
+                <h5 class="modal-title">${title}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                ${article.content}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Remove modal from DOM when hidden
+        modal.addEventListener('hidden.bs.modal', () => {
+          document.body.removeChild(modal);
+        });
+      } else {
+        alert(`Coming soon: ${title}\n\nThis article will be available in a future update!`);
+      }
+    }
+
+    // Toggle authentication buttons based on login state
+    function toggleAuthButtons(loggedIn) {
+      const loginBtns = document.querySelectorAll('.auth-login-btn');
+      const signupBtns = document.querySelectorAll('.auth-signup-btn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      const userWelcome = document.getElementById('user-welcome');
+      
+      console.log(`🔄 [Blog] Toggling auth state: loggedIn=${loggedIn}`);
+      console.log('🔍 [Blog] Found elements:', {
+        loginBtns: loginBtns.length,
+        signupBtns: signupBtns.length,
+        logoutBtn: !!logoutBtn,
+        signOutBtn: !!signOutBtn,
+        userWelcome: !!userWelcome
+      });
+      
+      if (loggedIn) {
+        // User is logged in - FORCE HIDE login/signup, FORCE SHOW logout and welcome
+        loginBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'inline-block';
+          logoutBtn.classList.remove('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'inline-block';
+          signOutBtn.classList.remove('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'inline-block';
+          userWelcome.classList.remove('d-none');
+        }
+        
+        console.log('✅ [Blog] AUTH STATE: LOGGED IN - Login/Signup HIDDEN, Sign Out SHOWN');
+      } else {
+        // User is logged out - FORCE SHOW login/signup, FORCE HIDE logout and welcome  
+        loginBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'none';
+          logoutBtn.classList.add('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'none';
+          signOutBtn.classList.add('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'none';
+          userWelcome.classList.add('d-none');
+        }
+        
+        console.log('✅ [Blog] AUTH STATE: LOGGED OUT - Login/Signup SHOWN, Sign Out HIDDEN');
+      }
+      setTimeout(() => {
+        const currentLoginVisible = Array.from(loginBtns).some(btn => !btn.classList.contains('d-none'));
+        const currentSignupVisible = Array.from(signupBtns).some(btn => !btn.classList.contains('d-none'));
+        const currentLogoutVisible = logoutBtn && !logoutBtn.classList.contains('d-none');
+        const currentSignOutVisible = signOutBtn && !signOutBtn.classList.contains('d-none');
+      }, 100);
+      document.body.classList.toggle('logged-in', loggedIn);
+    }
+
+    // Check authentication state on page load
+    async function checkAuthState() {
+      try {
+        console.log('🔄 [Blog] Checking authentication state...');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session && session.user) {
+          console.log('✅ [Blog] User is logged in:', session.user.email);
+          
+          // IMMEDIATELY set logged-in class to hide buttons
+          document.body.classList.add('logged-in');
+          document.body.classList.remove('logged-out');
+          
+          // Update user name in welcome message
+          const userName = session.user.user_metadata?.name || session.user.email.split('@')[0] || 'User';
+          const userNameSpan = document.getElementById('user-name');
+          if (userNameSpan) {
+            userNameSpan.textContent = userName;
+          }
+          
+          toggleAuthButtons(true);
+        } else {
+          console.log('❌ [Blog] No user session found - redirecting to login');
+          console.log('🏠 [Blog] Redirecting to homepage for authentication');
+          
+          // IMMEDIATELY set logged-out class
+          document.body.classList.remove('logged-in');
+          document.body.classList.add('logged-out');
+          
+          // Redirect to homepage for login
+          window.location.href = '/';
+          return;
+        }
+      } catch (error) {
+        console.error('[Blog] Auth check error:', error);
+        console.log('🏠 [Blog] Authentication error - redirecting to homepage');
+        window.location.href = '/';
+        return;
+      }
+    }
+
+    // Setup logout functionality
+    function setupLogoutButton() {
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      
+      if (logoutBtn) {
+        // Remove any existing listeners
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        const newLogoutBtn = document.getElementById('logoutBtn');
+        
+        newLogoutBtn.addEventListener('click', async () => {
+          try {
+            console.log('🔓 [Blog] Logout button clicked');
+            await supabase.auth.signOut();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[Blog] Logout error:', error);
+          }
+        });
+        console.log('✅ [Blog] Logout button setup complete');
+      }
+      
+      if (signOutBtn) {
+        signOutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔓 [Blog] Sign out button clicked');
+          
+          // Show loading state
+          const originalText = signOutBtn.innerHTML;
+          signOutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Signing out...';
+          signOutBtn.disabled = true;
+          
+          try {
+            await supabase.auth.signOut();
+            console.log('✅ [Blog] Sign out successful - redirecting to homepage');
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[Blog] Sign out error:', error);
+            signOutBtn.innerHTML = originalText;
+            signOutBtn.disabled = false;
+          }
+        });
+        console.log('✅ [Blog] Sign out button setup complete');
+      }
+    }
+
+    // Category filtering
+    function setupCategoryFilter() {
+      const categoryBadges = document.querySelectorAll('.category-badge');
+      const blogItems = document.querySelectorAll('.blog-item');
+      
+      categoryBadges.forEach(badge => {
+        badge.addEventListener('click', () => {
+          // Update active badge
+          categoryBadges.forEach(b => b.classList.remove('active'));
+          badge.classList.add('active');
+          
+          const selectedCategory = badge.dataset.category;
+          
+          // Filter blog items
+          let visibleCount = 0;
+          blogItems.forEach(item => {
+            if (selectedCategory === 'all' || item.dataset.category === selectedCategory) {
+              item.style.display = 'block';
+              visibleCount++;
+            } else {
+              item.style.display = 'none';
+            }
+          });
+          
+          // Show/hide no results message
+          const noResults = document.getElementById('noResults');
+          if (visibleCount === 0) {
+            noResults.classList.remove('d-none');
+          } else {
+            noResults.classList.add('d-none');
+          }
+        });
+      });
+    }
+
+    // Search functionality
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const blogItems = document.querySelectorAll('.blog-item');
+      
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        let visibleCount = 0;
+        
+        blogItems.forEach(item => {
+          const title = item.querySelector('.card-title').textContent.toLowerCase();
+          const description = item.querySelector('.card-text').textContent.toLowerCase();
+          
+          if (title.includes(searchTerm) || description.includes(searchTerm)) {
+            item.style.display = 'block';
+            visibleCount++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        // Show/hide no results message
+        const noResults = document.getElementById('noResults');
+        if (visibleCount === 0 && searchTerm !== '') {
+          noResults.classList.remove('d-none');
+        } else {
+          noResults.classList.add('d-none');
+        }
+        
+        // Reset category filter when searching
+        if (searchTerm !== '') {
+          document.querySelectorAll('.category-badge').forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-category="all"]').classList.add('active');
+        }
+      });
+    }
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 [Blog] Auth state change:', event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ [Blog] User signed in:', session.user.email);
+        
+        const userName = session.user.user_metadata?.name || session.user.email.split('@')[0] || 'User';
+        const userNameSpan = document.getElementById('user-name');
+        if (userNameSpan) {
+          userNameSpan.textContent = userName;
+        }
+        
+        toggleAuthButtons(true);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🔓 [Blog] User signed out');
+        toggleAuthButtons(false);
+        
+        // Redirect to homepage if not already there
+        if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+          console.log('🏠 [Blog] Redirecting to homepage after logout');
+          window.location.href = '/';
+        }
+      }
+    });
+
+    // Initialize authentication immediately and on page load
+    async function initializeBlogAuth() {
+      console.log('🚀 [Blog] Initializing authentication...');
+      await checkAuthState();
+      setupLogoutButton();
+      console.log('✅ [Blog] Authentication initialization complete');
+    }
+
+    // Run auth check immediately when script loads
+    initializeBlogAuth();
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeBlogAuth();
+      setupCategoryFilter();
+      setupSearch();
+      
+      // Add click handlers to blog cards (placeholder for future functionality)
+      document.querySelectorAll('.blog-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const title = card.querySelector('.card-title').textContent;
+          showArticle(title);
+        });
+      });
+    });
+
+    // Also run after a short delay to catch any timing issues
+    setTimeout(initializeBlogAuth, 100);
+    setTimeout(initializeBlogAuth, 500);
+  </script>
+</body>
+</html> 

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support & Contact | Gymcyclopedia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Poppins', 'Inter', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      background-color: #000;
+      color: #fff;
+    }
+    .navbar-brand {
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+    .navbar-brand:hover {
+      color: #00d4ff;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5), 0 0 20px rgba(0, 212, 255, 0.3);
+      transform: scale(1.05);
+      letter-spacing: 3px;
+    }
+    .navbar-dark .navbar-nav .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link.active {
+      color: #fff;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+    }
+    .btn-primary {
+      background: linear-gradient(45deg, #007bff, #00d4ff);
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.5rem;
+    }
+    .btn-outline-light {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-outline-light:hover {
+      background-color: #fff;
+      color: #000;
+      transform: translateY(-2px);
+    }
+    .form-control, .form-select, .form-control:focus, .form-select:focus {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 8px;
+    }
+    .form-control:focus, .form-select:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .hero-section {
+      background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(0, 123, 255, 0.05));
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .quick-action {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      height: 100%;
+    }
+    .quick-action:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      transform: translateY(-3px);
+    }
+    .quick-action-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .faq-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .faq-question {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      text-align: left;
+      width: 100%;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .faq-question:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .faq-answer {
+      padding: 0 1.5rem 1.5rem;
+      color: rgba(255, 255, 255, 0.9);
+      display: none;
+    }
+    .faq-answer.show {
+      display: block;
+    }
+    .contact-method {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .contact-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #007bff;
+    }
+    .social-link {
+      display: inline-block;
+      width: 45px;
+      height: 45px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      text-decoration: none;
+      color: #fff;
+      font-size: 1.3rem;
+      line-height: 45px;
+      text-align: center;
+      margin: 0 0.3rem;
+      transition: all 0.3s ease;
+    }
+    .social-link:hover {
+      background: #007bff;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+    
+    /* Enhanced text readability */
+    body, .card-body, .card-header, p, span, li, label {
+      color: #ffffff !important;
+    }
+    
+    .card-text, .text-muted {
+      color: #e0e0e0 !important;
+    }
+    
+    .lead {
+      color: #f5f5f5 !important;
+      font-weight: 500;
+    }
+    
+    small {
+      color: #d0d0d0 !important;
+    }
+    
+    .faq-answer {
+      color: #f0f0f0 !important;
+    }
+
+    /* Hide auth buttons when logged in */
+    body.logged-in .auth-login-btn,
+    body.logged-in .auth-signup-btn {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+    <div class="container">
+      <span class="navbar-brand fw-bold">GYMCYCLOPEDIA</span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="/workouts.html">Workouts</a></li>
+          <li class="nav-item"><a class="nav-link" href="/ai-coaching.html">AI Coaching</a></li>
+          <li class="nav-item"><a class="nav-link" href="/nutrition-recovery.html">Nutrition & Recovery</a></li>
+          <li class="nav-item"><a class="nav-link" href="/blog.html">Blog</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/support.html">Support & Contact</a></li>
+        </ul>
+      </div>
+      <!-- Auth buttons - redirect to homepage for login -->
+      <div class="d-flex">
+        <button class="btn btn-outline-light me-2 auth-login-btn" onclick="window.location.href='/?action=login'">Login</button>
+        <button class="btn btn-primary auth-signup-btn" onclick="window.location.href='/?action=signup'">Sign Up</button>
+        <button id="signOutBtn" class="btn btn-outline-light d-none">
+          <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="display-4 fw-bold mb-3">🛠️ Support & Contact</h1>
+      <p class="lead mb-3">Get help, share feedback, or contact our team</p>
+      <span class="badge bg-success fs-6">⚡ Response within 24 hours</span>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+      <div class="col-lg-3 col-md-6 mb-4">
+        <a href="#faqs" class="quick-action">
+          <span class="quick-action-icon">❓</span>
+          <h2>FAQs</h2>
+          <small>Quick answers to common questions</small>
+        </a>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <a href="#contact" class="quick-action">
+          <span class="quick-action-icon">📧</span>
+          <h2>Contact Us</h2>
+          <small>Send us a message directly</small>
+        </a>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <a href="#troubleshooting" class="quick-action">
+          <span class="quick-action-icon">🔧</span>
+          <h2>Troubleshooting</h2>
+          <small>Fix common issues quickly</small>
+        </a>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <a href="#connect" class="quick-action">
+          <span class="quick-action-icon">🤝</span>
+          <h2>Connect</h2>
+          <small>Follow us on social media</small>
+        </a>
+      </div>
+    </div>
+
+    <!-- EmailJS Setup Section (Admin Only) -->
+    <div class="row mb-4" id="emailjsSetup" style="display: none;">
+      <div class="col-12">
+        <div class="card border-warning">
+          <div class="card-header bg-warning text-dark">
+            <h2 class="mb-0">⚙️ EmailJS Setup (Admin Only)</h2>
+          </div>
+          <div class="card-body">
+            <p class="small mb-3">Configure your EmailJS credentials to enable direct email sending:</p>
+            <div class="row">
+              <div class="col-md-4">
+                <label class="form-label">Service ID</label>
+                <input type="text" class="form-control form-control-sm" id="setupServiceId" placeholder="service_xxxxxxx">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Template ID</label>
+                <input type="text" class="form-control form-control-sm" id="setupTemplateId" placeholder="template_xxxxxxx">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Public Key</label>
+                <input type="text" class="form-control form-control-sm" id="setupPublicKey" placeholder="xxxxxxxxxxxxxxxx">
+              </div>
+            </div>
+            <div class="mt-3">
+              <button class="btn btn-success btn-sm" onclick="saveEmailJSConfig()">Save Configuration</button>
+              <button class="btn btn-secondary btn-sm" onclick="testEmailJS()">Test Email</button>
+              <button class="btn btn-outline-light btn-sm" onclick="hideSetup()">Hide Setup</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Left Column: FAQs and Troubleshooting -->
+      <div class="col-lg-8 mb-5">
+        
+        <!-- FAQs -->
+        <section id="faqs" class="mb-5">
+          <h3 class="mb-4">❓ Frequently Asked Questions</h3>
+          
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              How do I create my first workout?
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Go to "Workouts" → Click "Create Workout" → Choose name and category → Select exercises from our library → Save your workout. You can customize sets, reps, and rest times for each exercise.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              How do I track my progress?
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>When you start a workout session, log your actual weights, reps, and notes for each exercise. This data is saved to your workout history for progress tracking over time.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              What equipment do I need?
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Our exercises range from bodyweight (no equipment needed) to gym equipment like dumbbells and barbells. Each exercise shows required equipment so you can choose what matches your setup.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              Is my workout data saved automatically?
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Yes! All your workout data, created workouts, and completed sessions are automatically saved to your account. Access it from any device by logging in.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section id="troubleshooting">
+          <h3 class="mb-4">🔧 Common Issues & Solutions</h3>
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h4 class="text-warning">🔐 Login Issues</h4>
+                  <ul class="small">
+                    <li>Check email and password spelling</li>
+                    <li>Use "Forgot Password" if needed</li>
+                    <li>Check spam folder for verification emails</li>
+                  </ul>
+                  
+                  <h4 class="text-info mt-3">💾 Data Issues</h4>
+                  <ul class="small">
+                    <li>Ensure stable internet connection</li>
+                    <li>Refresh page or re-login if data not syncing</li>
+                    <li>Check workout history tab for saved data</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h4 class="text-success">🖥️ Technical Issues</h4>
+                  <ul class="small">
+                    <li>Clear browser cache and cookies</li>
+                    <li>Try different browser or incognito mode</li>
+                    <li>Disable browser extensions temporarily</li>
+                  </ul>
+                  
+                  <h4 class="text-primary mt-3">📱 Mobile Issues</h4>
+                  <ul class="small">
+                    <li>Use latest browser version</li>
+                    <li>Try landscape mode for better view</li>
+                    <li>Ensure good internet connection</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: Contact Form and Info -->
+      <div class="col-lg-4">
+        
+        <!-- Contact Form -->
+        <section id="contact" class="mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">📧 Send us a Message</h5>
+            </div>
+            <div class="card-body">
+              <form id="contactForm">
+                <div class="mb-3">
+                  <label for="contactName" class="form-label">Name</label>
+                  <input type="text" class="form-control" id="contactName" required aria-required="true" aria-label="Your Name">
+                </div>
+                <div class="mb-3">
+                  <label for="contactEmail" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="contactEmail" required aria-required="true" aria-label="Your Email Address">
+                </div>
+                <div class="mb-3">
+                  <label for="contactSubject" class="form-label">Subject</label>
+                  <select class="form-select" id="contactSubject" required aria-required="true" aria-label="Message Subject">
+                    <option value="">Select topic</option>
+                    <option value="technical">Technical Support</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="bug">Bug Report</option>
+                    <option value="general">General Question</option>
+                    <option value="feedback">Feedback</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="contactMessage" class="form-label">Message</label>
+                  <textarea class="form-control" id="contactMessage" rows="4" required aria-required="true" aria-label="Your Message"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Send Message</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Contact Info -->
+        <div class="contact-method">
+          <div class="contact-icon">📧</div>
+          <h6>Email Support</h6>
+          <p class="mb-1">chsandilya456@gmail.com</p>
+          <small>Response within 24 hours</small>
+        </div>
+
+        <div class="contact-method">
+          <div class="contact-icon">🕒</div>
+          <h6>Business Hours</h6>
+          <p class="mb-1">Monday - Friday</p>
+          <small>9 AM - 6 PM EST</small>
+        </div>
+
+        <!-- Social Media -->
+        <section id="connect">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">🤝 Connect with Us</h6>
+            </div>
+            <div class="card-body text-center">
+              <p class="small mb-3">Follow for fitness tips and updates</p>
+              <div>
+                <a href="#" class="social-link" title="Instagram">📷</a>
+                <a href="#" class="social-link" title="YouTube">📺</a>
+                <a href="#" class="social-link" title="Twitter">🐦</a>
+                <a href="#" class="social-link" title="Facebook">👥</a>
+              </div>
+              <p class="small text-muted mt-3 mb-0">Coming soon!</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    console.log('🛠️ Support & Contact page loaded');
+    
+    // Supabase configuration
+    const SUPABASE_URL = 'https://stojhqobywrvkjaabcvq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0b2pocW9ieXdydmtqYWFiY3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMDcwMDEsImV4cCI6MjA2NTc4MzAwMX0.JQeFsT3nUFMpQ1Tz9uYBnZ3IuE_gBK9P9Du0Igo7Hsg';
+    
+    // Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    function toggleFaq(button) {
+      const answer = button.nextElementSibling;
+      const icon = button.querySelector('span');
+      
+      if (answer.classList.contains('show')) {
+        answer.classList.remove('show');
+        icon.textContent = '+';
+      } else {
+        // Close all other FAQs
+        document.querySelectorAll('.faq-answer.show').forEach(item => {
+          item.classList.remove('show');
+          item.previousElementSibling.querySelector('span').textContent = '+';
+        });
+        
+        // Open this FAQ
+        answer.classList.add('show');
+        icon.textContent = '-';
+      }
+    }
+
+    // Initialize EmailJS - Load from localStorage or use defaults
+    let EMAILJS_SERVICE_ID = localStorage.getItem('emailjs_service_id') || 'service_7bnytu9';
+    let EMAILJS_TEMPLATE_ID = localStorage.getItem('emailjs_template_id') || 'template_dfamdsc';
+    let EMAILJS_PUBLIC_KEY = localStorage.getItem('emailjs_public_key') || 'yzslRO5iFy-l8bDiE';
+    
+    // Check if EmailJS is configured
+    const isEmailJSConfigured = () => {
+      return true; // Always configured with proper credentials
+    };
+    
+    // EmailJS is now fully configured - no setup needed
+    // Setup section is hidden by default since configuration is complete
+    
+    // Your admin email
+    const ADMIN_EMAIL = 'chsandilya456@gmail.com';
+    
+    // Initialize EmailJS
+    if (typeof emailjs !== 'undefined' && isEmailJSConfigured()) {
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
+    
+    // EmailJS Setup Functions
+    function saveEmailJSConfig() {
+      const serviceId = document.getElementById('setupServiceId').value.trim();
+      const templateId = document.getElementById('setupTemplateId').value.trim();
+      const publicKey = document.getElementById('setupPublicKey').value.trim();
+      
+      if (!serviceId || !templateId || !publicKey) {
+        showErrorToast('Please fill in all EmailJS credentials');
+        return;
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('emailjs_service_id', serviceId);
+      localStorage.setItem('emailjs_template_id', templateId);
+      localStorage.setItem('emailjs_public_key', publicKey);
+      
+      // Update current values
+      EMAILJS_SERVICE_ID = serviceId;
+      EMAILJS_TEMPLATE_ID = templateId;
+      EMAILJS_PUBLIC_KEY = publicKey;
+      
+      // Initialize EmailJS with new key
+      if (typeof emailjs !== 'undefined') {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+      }
+      
+      showSuccessToast('EmailJS configuration saved successfully! 🎉');
+      document.getElementById('emailjsSetup').style.display = 'none';
+    }
+    
+    function testEmailJS() {
+      if (!isEmailJSConfigured()) {
+        showErrorToast('Please configure EmailJS first');
+        return;
+      }
+      
+      const testData = {
+        name: 'EmailJS Test',
+        email: 'test@example.com',
+        subject: 'Test Message',
+        message: 'This is a test message to verify EmailJS is working correctly.'
+      };
+      
+      showLoadingToast('Sending test email...');
+      
+      sendEmailViaEmailJS(testData).then(success => {
+        if (success) {
+          showSuccessToast('Test email sent successfully! Check your inbox.');
+        } else {
+          showErrorToast('Test email failed. Please check your EmailJS configuration.');
+        }
+      });
+    }
+    
+    function hideSetup() {
+      document.getElementById('emailjsSetup').style.display = 'none';
+    }
+    
+    function showSetup() {
+      document.getElementById('emailjsSetup').style.display = 'block';
+      // Load current values
+      document.getElementById('setupServiceId').value = EMAILJS_SERVICE_ID;
+      document.getElementById('setupTemplateId').value = EMAILJS_TEMPLATE_ID;
+      document.getElementById('setupPublicKey').value = EMAILJS_PUBLIC_KEY;
+    }
+    
+    // Show setup with keyboard shortcut (Ctrl+Shift+E)
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+        showSetup();
+      }
+    });
+    
+    // Show loading toast
+    function showLoadingToast(message) {
+      const toastContainer = document.getElementById('toast-container') || createToastContainer();
+      const toastId = 'loading-toast-' + Date.now();
+      
+      const toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = 'toast show';
+      toast.innerHTML = `
+        <div class="toast-header bg-primary text-white">
+          <strong class="me-auto">📧 Sending Message</strong>
+        </div>
+        <div class="toast-body">
+          ${message}
+        </div>
+      `;
+      
+      toastContainer.appendChild(toast);
+      return toastId;
+    }
+    
+    // Show success toast
+    function showSuccessToast(message) {
+      const toastContainer = document.getElementById('toast-container') || createToastContainer();
+      const toast = document.createElement('div');
+      toast.className = 'toast show';
+      toast.innerHTML = `
+        <div class="toast-header bg-success text-white">
+          <strong class="me-auto">✅ Success</strong>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+          ${message}
+        </div>
+      `;
+      
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+    
+    // Show error toast
+    function showErrorToast(message) {
+      const toastContainer = document.getElementById('toast-container') || createToastContainer();
+      const toast = document.createElement('div');
+      toast.className = 'toast show';
+      toast.innerHTML = `
+        <div class="toast-header bg-danger text-white">
+          <strong class="me-auto">❌ Error</strong>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+          ${message}
+        </div>
+      `;
+      
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 8000);
+    }
+    
+    // Create toast container
+    function createToastContainer() {
+      const container = document.createElement('div');
+      container.id = 'toast-container';
+      container.className = 'position-fixed top-0 end-0 p-3';
+      container.style.zIndex = '9999';
+      document.body.appendChild(container);
+      return container;
+    }
+    
+    // Save message to database as backup
+    async function saveMessageToDatabase(messageData) {
+      try {
+        const { data, error } = await supabase
+          .from('contact_messages')
+          .insert([{
+            name: messageData.name,
+            email: messageData.email,
+            subject: messageData.subject,
+            message: messageData.message,
+            status: 'new',
+            created_at: new Date().toISOString()
+          }]);
+        
+        if (error) throw error;
+        console.log('✅ Message saved to database');
+        return true;
+      } catch (error) {
+        console.error('❌ Error saving to database:', error);
+        return false;
+      }
+    }
+    
+    // Send email using EmailJS
+    async function sendEmailViaEmailJS(messageData) {
+      try {
+        if (typeof emailjs === 'undefined') {
+          throw new Error('EmailJS not loaded');
+        }
+        
+        if (!isEmailJSConfigured()) {
+          throw new Error('EmailJS not configured');
+        }
+        
+        const templateParams = {
+          from_name: messageData.name,
+          from_email: messageData.email,
+          to_email: ADMIN_EMAIL,
+          subject: `[Gymcyclopedia] ${messageData.subject}`,
+          message: messageData.message,
+          reply_to: messageData.email
+        };
+        
+        const response = await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          templateParams
+        );
+        
+        console.log('✅ Email sent successfully:', response);
+        return true;
+      } catch (error) {
+        console.error('❌ EmailJS error:', error);
+        return false;
+      }
+    }
+    
+    // Fallback: Open email client
+    function openEmailClient(messageData) {
+      const subject = encodeURIComponent(`[Gymcyclopedia] ${messageData.subject}`);
+      const body = encodeURIComponent(
+        `Hello,\n\n${messageData.message}\n\n` +
+        `Best regards,\n${messageData.name}\n` +
+        `Email: ${messageData.email}`
+      );
+      
+      const mailtoLink = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
+      window.location.href = mailtoLink;
+    }
+    
+    // Main contact form handler
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.textContent;
+      
+      // Get form data
+      const messageData = {
+        name: document.getElementById('contactName').value.trim(),
+        email: document.getElementById('contactEmail').value.trim(),
+        subject: document.getElementById('contactSubject').value,
+        message: document.getElementById('contactMessage').value.trim()
+      };
+      
+      // Validate form
+      if (!messageData.name || !messageData.email || !messageData.subject || !messageData.message) {
+        showErrorToast('Please fill in all fields');
+        return;
+      }
+      
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(messageData.email)) {
+        showErrorToast('Please enter a valid email address');
+        return;
+      }
+      
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+      const loadingToastId = showLoadingToast('Sending your message...');
+      
+      try {
+        // Save to database first (backup)
+        await saveMessageToDatabase(messageData);
+        
+        // Try to send email via EmailJS
+        const emailSent = await sendEmailViaEmailJS(messageData);
+        
+        // Remove loading toast
+        document.getElementById(loadingToastId)?.remove();
+        
+        if (emailSent) {
+          // EmailJS success
+          showSuccessToast('Message sent successfully! We will respond within 24 hours.');
+          this.reset();
+        } else {
+          // EmailJS failed, offer alternatives
+          showErrorToast('Direct email failed. Opening your email client...');
+          setTimeout(() => {
+            openEmailClient(messageData);
+          }, 2000);
+        }
+        
+      } catch (error) {
+        console.error('❌ Contact form error:', error);
+        document.getElementById(loadingToastId)?.remove();
+        showErrorToast('Error sending message. Opening your email client...');
+        setTimeout(() => {
+          openEmailClient(messageData);
+        }, 2000);
+      } finally {
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+      }
+    });
+
+    /* ===== AUTHENTICATION SYSTEM ===== */
+    
+    // Toggle authentication buttons based on login state
+    function toggleAuthButtons(loggedIn) {
+      const loginBtns = document.querySelectorAll('.auth-login-btn');
+      const signupBtns = document.querySelectorAll('.auth-signup-btn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      const userWelcome = document.getElementById('user-welcome');
+      
+      console.log(`🔄 [Support] Toggling auth state: loggedIn=${loggedIn}`);
+      console.log('🔍 [Support] Found elements:', {
+        loginBtns: loginBtns.length,
+        signupBtns: signupBtns.length,
+        logoutBtn: !!logoutBtn,
+        signOutBtn: !!signOutBtn,
+        userWelcome: !!userWelcome
+      });
+      
+      if (loggedIn) {
+        // User is logged in - FORCE HIDE login/signup, FORCE SHOW logout and welcome
+        loginBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'none';
+          btn.classList.add('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'inline-block';
+          logoutBtn.classList.remove('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'inline-block';
+          signOutBtn.classList.remove('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'inline-block';
+          userWelcome.classList.remove('d-none');
+        }
+        
+        console.log('✅ [Support] AUTH STATE: LOGGED IN - Login/Signup HIDDEN, Sign Out SHOWN');
+      } else {
+        // User is logged out - FORCE SHOW login/signup, FORCE HIDE logout and welcome  
+        loginBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        signupBtns.forEach(btn => {
+          btn.style.display = 'inline-block';
+          btn.classList.remove('d-none');
+        });
+        if (logoutBtn) {
+          logoutBtn.style.display = 'none';
+          logoutBtn.classList.add('d-none');
+        }
+        if (signOutBtn) {
+          signOutBtn.style.display = 'none';
+          signOutBtn.classList.add('d-none');
+        }
+        if (userWelcome) {
+          userWelcome.style.display = 'none';
+          userWelcome.classList.add('d-none');
+        }
+        
+        console.log('✅ [Support] AUTH STATE: LOGGED OUT - Login/Signup SHOWN, Sign Out HIDDEN');
+      }
+      document.body.classList.toggle('logged-in', loggedIn);
+    }
+
+    // Setup logout functionality
+    function setupLogoutButton() {
+      const logoutBtn = document.getElementById('logoutBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      
+      if (logoutBtn) {
+        // Remove any existing listeners
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        const newLogoutBtn = document.getElementById('logoutBtn');
+        
+        newLogoutBtn.addEventListener('click', async () => {
+          try {
+            console.log('🔓 [Support] Logout button clicked');
+            await supabase.auth.signOut();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[Support] Logout error:', error);
+          }
+        });
+        console.log('✅ [Support] Logout button setup complete');
+      }
+      
+      if (signOutBtn) {
+        signOutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔓 [Support] Sign out button clicked');
+          
+          // Show loading state
+          const originalText = signOutBtn.innerHTML;
+          signOutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Signing out...';
+          signOutBtn.disabled = true;
+          
+          try {
+            await supabase.auth.signOut();
+            console.log('✅ [Support] Sign out successful - redirecting to homepage');
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('[Support] Sign out error:', error);
+            signOutBtn.innerHTML = originalText;
+            signOutBtn.disabled = false;
+          }
+        });
+        console.log('✅ [Support] Sign out button setup complete');
+      }
+    }
+
+    // Check authentication state on page load
+    async function checkAuthStateSupport() {
+      try {
+        console.log('🔄 [Support] Checking authentication state...');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session && session.user) {
+          console.log('✅ [Support] User is logged in:', session.user.email);
+          
+          // IMMEDIATELY set logged-in class to hide buttons
+          document.body.classList.add('logged-in');
+          document.body.classList.remove('logged-out');
+          
+          // Update user name in welcome message
+          const userName = session.user.user_metadata?.name || session.user.email.split('@')[0] || 'User';
+          const userNameSpan = document.getElementById('user-name');
+          if (userNameSpan) {
+            userNameSpan.textContent = userName;
+          }
+          
+          toggleAuthButtons(true);
+          return session.user;
+        } else {
+          console.log('❌ [Support] No user session found - redirecting to login');
+          console.log('🏠 [Support] Redirecting to homepage for authentication');
+          
+          // IMMEDIATELY set logged-out class
+          document.body.classList.remove('logged-in');
+          document.body.classList.add('logged-out');
+          
+          // Redirect to homepage for login
+          window.location.href = '/';
+          return null;
+        }
+      } catch (error) {
+        console.error('[Support] Auth check error:', error);
+        console.log('🏠 [Support] Authentication error - redirecting to homepage');
+        window.location.href = '/';
+        return null;
+      }
+    }
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 [Support] Auth state change:', event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ [Support] User signed in:', session.user.email);
+        
+        const userName = session.user.user_metadata?.name || session.user.email.split('@')[0] || 'User';
+        const userNameSpan = document.getElementById('user-name');
+        if (userNameSpan) {
+          userNameSpan.textContent = userName;
+        }
+        
+        toggleAuthButtons(true);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🔓 [Support] User signed out');
+        toggleAuthButtons(false);
+        
+        // Redirect to homepage if not already there
+        if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+          console.log('🏠 [Support] Redirecting to homepage after logout');
+          window.location.href = '/';
+        }
+      }
+    });
+
+    // Initialize authentication immediately and on page load
+    async function initializeSupportAuth() {
+      console.log('🚀 [Support] Initializing authentication...');
+      await checkAuthStateSupport();
+      setupLogoutButton();
+      console.log('✅ [Support] Authentication initialization complete');
+    }
+
+    // Run auth check immediately when script loads
+    initializeSupportAuth();
+
+    // Also run when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeSupportAuth);
+
+    // Also run after a short delay to catch any timing issues
+    setTimeout(initializeSupportAuth, 100);
+    setTimeout(initializeSupportAuth, 500);
+
+  </script>
+</body>
+</html>
