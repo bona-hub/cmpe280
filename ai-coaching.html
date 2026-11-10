@@ -401,69 +401,6 @@
       return session?.user || null;
     }
 
-    // Direct Gemini API Key for fallback (Client-side)
-    // Note: In production, this should ideally be proxy-only, but user requested direct fallback.
-    const DIRECT_GEMINI_KEY = 'AIzaSyCjyzrSpfdw3Kh0pfUum6oHkUV-1oJCdIY';
-
-    async function callGeminiDirectly(preferences, level) {
-      console.log('⚠️ Attempting direct Gemini API call as fallback...');
-      
-      const prompt = `
-      You are an elite fitness coach. Create a workout session based on the user's details.
-      
-      User Profile:
-      - Goal: ${preferences.goal}
-      - Target Muscle/Focus: ${preferences.target_muscle || 'Full Body'}
-      - Level: ${level || 'Intermediate'}
-      - Equipment: ${preferences.equipment || 'Full Gym'}
-      - Duration: ${preferences.duration} minutes
-      - Injuries/Concerns: ${preferences.focus || 'None'}
-
-      RULES:
-      1. Return ONLY valid JSON. No markdown, no backticks.
-      2. The structure must match this interface:
-      {
-        "workout_name": "Creative Name String",
-        "description": "Brief strategy description",
-        "estimated_duration": "number (minutes)",
-        "exercises": [
-          {
-            "name": "Exercise Name",
-            "sets": number,
-            "reps": "string",
-            "rest": "string",
-            "tips": "Brief form tip"
-          }
-        ]
-      }
-      3. Focus heavily on the '${preferences.target_muscle || 'Full Body'}' muscle group.
-      4. Provide ${Math.floor(parseInt(preferences.duration || '60') / 10)} to ${Math.floor(parseInt(preferences.duration || '60') / 7)} exercises.
-      `;
-
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${DIRECT_GEMINI_KEY}`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseMimeType: "application/json"
-          }
-        })
-      });
-
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
-      
-      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error('No content from Gemini');
-      
-      // Cleanup
-      text = text.replace(/```json\n?/, '').replace(/```/, '').trim();
-      return JSON.parse(text);
-    }
-
     async function generateAIWorkoutSuggestion() {
       const goal = document.getElementById('fitnessGoal').value;
       const level = document.getElementById('experienceLevel').value;
@@ -507,19 +444,12 @@
         suggestions = data;
 
       } catch (backendError) {
-        console.warn('⚠️ Backend AI failed, trying direct client fallback:', backendError);
+  console.warn(
+    'Backend AI failed; using static workout template:',
+    backendError
+  );
         
-        try {
-          // 2. Try Direct Gemini Call (Client-Side Fallback)
-          suggestions = await callGeminiDirectly({
-             goal, duration: time, target_muscle: muscle, equipment: 'Standard Gym', focus: 'General'
-          }, level);
-          source = 'Direct Client API';
-          
-          } catch (clientError) {
-          console.error('❌ Both Backend and Client AI failed:', clientError);
-          
-          // 3. Final Fallback: Static Template
+          // 3. Fallback: Static Template
           // Silent fallback - render template as if it were AI result
           
           const staticPlan = getWorkoutSuggestions(goal, level, parseInt(time));
@@ -544,9 +474,8 @@
           showToast('Workout generated successfully! 🤖', 'success');
           return; // Exit
         }
-      }
 
-      // If we got suggestions (either from backend or client fallback)
+      // If we got suggestions from the backend
       if (suggestions) {
         renderWorkoutPlan(suggestions, container, false);
         showToast('AI workout generated successfully! 🤖', 'success');
