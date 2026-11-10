@@ -50,7 +50,7 @@ serve(async (req) => {
 
     // 2. Call Google Gemini API
     // Using environment variable for security, with fallback for development
-    const API_KEY = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyCjyzrSpfdw3Kh0pfUum6oHkUV-1oJCdIY';
+    const API_KEY = Deno.env.get('GEMINI_API_KEY');
     
     if (!API_KEY) {
       throw new Error('Missing GEMINI_API_KEY environment variable');
